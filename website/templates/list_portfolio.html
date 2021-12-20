@@ -1,0 +1,18 @@
+{% extends  "base.html" %}
+{% block title %} Lista Carteras {% endblock %}
+
+{% block content %}  
+    <h1>LISTA DE CARTERAS</h1>
+    <div>
+        {% if list_portfolio %}
+            <ul>
+                {% for portfolio in list_portfolio %}
+                    <li><a href="/view-portfolio?id={{portfolio.id}}">{{portfolio.name}}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No existen carteras!</p>
+        {% endif %}
+    </div>
+
+{% endblock %}

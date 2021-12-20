@@ -1,0 +1,14 @@
+{% extends  "base.html" %}
+{% block title %} BUscar Cartera {% endblock %}
+
+{% block content %}  
+
+    <form method="POST">
+        <fieldset>
+            <legend>Buscar Cartera</legend>
+            <p><label>Activo:</label> <input type="text" name="asset" /></p>
+            <button type="submit" name="search_portfolio">Buscar</button>
+        </fieldset>
+    </form>
+
+{% endblock %}

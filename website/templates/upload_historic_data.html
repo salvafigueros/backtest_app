@@ -1,0 +1,44 @@
+{% extends  "base.html" %}
+{% block title %} Subir Datos Históricos {% endblock %}
+
+{% block content %}  
+
+
+    <div>
+        <p>Elige si subir datos de acciones o futuros:</p>
+        <button onclick=show_upload_stock_prices()>Acciones</button>
+        <button onclick=show_upload_future_prices()>Futuros</button>
+        <div id="upload_stock_prices" style="display:none">
+            <form method="POST" action="/upload-historic-data-stocks">
+                <fieldset>
+                    <legend>Subir Datos Históricos de una Acción</legend>
+                    <p>Rellenar los campos que aparecen a continuación para subir los datos históricos de la acción cuyo ticker se introduce.</p>
+                    <p><label>Ticker:</label> <input type="text" name="ticker" /></p>
+                    <p><label>Nombre de la Compañía:</label> <input type="text" name="company_name" /> Rellenar en caso de que los datos sean de una acción nueva para el sistema. </p>
+                    <p><label>Mercado:</label> <input type="text" name="market" /> Rellenar en caso de que los datos sean de una acción nueva para el sistema. </p>
+                    <p><label>Moneda:</label> <input type="text" name="currency" /> Rellenar en caso de que los datos sean de una acción nueva para el sistema. </p>
+                    <p><label>Fecha de inicio:</label> <input type="date" name="first_date" /></p>
+                    <p><label>Fecha de final:</label> <input type="date" name="last_date" /></p>
+                    <button type="submit" name="upload_historic_data">Subir</button>
+                </fieldset>
+            </form>
+        </div>
+        <div id="upload_future_prices" style="display:none">
+            <form method="POST" action="/upload-historic-data-futures">
+                <fieldset>
+                    <legend>Subir Datos Históricos de un Futuro</legend>
+                    <p>Rellenar los campos que aparecen a continuación para subir los datos históricos del futuro cuyo ticker se introduce.</p>
+                    <p><label>Ticker:</label> <input type="text" name="ticker" /></p>
+                    <p><label>Nombre del Futuro:</label> <input type="text" name="futures_name" /> Rellenar en caso de que los datos sean de un futuro nuevo para el sistema. </p>
+                    <p><label>Moneda:</label> <input type="text" name="currency" /> Rellenar en caso de que los datos sean de una acción nueva para el sistema. </p>
+                    <p><label>Fecha de inicio:</label> <input type="date" name="first_date" /></p>
+                    <p><label>Fecha de final:</label> <input type="date" name="last_date" /></p>
+                    <button type="submit" name="upload_historic_data">Subir</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
+    
+
+{% endblock %}

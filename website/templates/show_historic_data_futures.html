@@ -1,0 +1,10 @@
+{% extends  "base.html" %}
+{% block title %} Precios Históricos {% endblock %}
+
+{% block content %}  
+
+    <h1>Precios Históricos</h1>
+    <h2>{{futures.ticker}}</h2>
+    {{futures_prices | safe}}
+
+{% endblock %}

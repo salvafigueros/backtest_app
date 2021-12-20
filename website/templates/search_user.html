@@ -1,0 +1,14 @@
+{% extends  "base.html" %}
+{% block title %} Search User {% endblock %}
+
+{% block content %}  
+
+    <form method="POST">
+        <fieldset>
+            <legend>Buscar Usuario</legend>
+            <p><label>Nombre de usuario:</label> <input type="text" name="user_name" /></p>
+            <button type="submit" name="search_user">Entrar</button>
+        </fieldset>
+    </form>
+
+{% endblock %}

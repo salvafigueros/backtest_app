@@ -1,0 +1,39 @@
+{% extends  "base.html" %}
+{% block title %} Crear Cartera {% endblock %}
+
+{% block content %}  
+
+
+    <div>
+        <p>Página para crear una cartera</p>
+        <div id="">
+            <form method="POST" action="">
+                <fieldset>
+                    <legend>Crear Cartera</legend>
+                    <p>Introduce los siguientes datos para crear una cartera:</p>
+                    <ul>
+                        <li>Nombre: nombre de la cartera</li>
+                        <li>Capital: capital inicial de la cartera</li>
+                        <li>Moneda: moneda en la que va a estar denominada la cartera</li>
+                    </ul>
+                    <p><label>Nombre:</label> <input type="text" name="name" /></p>
+                    <p><label>Capital:</label> <input type="number" name="starting_cash" /></p>
+                    <p><label>Moneda:</label> <input type="text" name="currency" /></p>
+                    <p>Elegir los activos financieros que van a componer la cartera:</p>
+                    <a href="javascript:void(0);" class="add_button" title="Add field">Añadir Activo<img src=""/></a>
+                    <div class="field_wrapper">
+                        <div>
+                            <h3>Activo 1</h3>
+                            <p><label>Ticker:</label> <input type="text" name="asset[]" /></p>
+                            <p><label>Nº de Acciones/Contratos:</label> <input type="number" name="quantity[]" /></p>
+                        </div>
+                    </div>
+                    <button type="submit" name="create_portfolio">Crear Cartera</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
+    
+
+{% endblock %}

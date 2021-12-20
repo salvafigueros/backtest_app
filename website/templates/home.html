@@ -1,0 +1,17 @@
+{% extends  "base.html" %}
+{% block title %} Home {% endblock %}
+
+{% block content %}
+    <ul>
+        <li><a href="/search-user">Buscar Usuario</a></li>
+        <li><a href="/search-portfolio">Buscar Cartera</a></li>
+        {% if 'user_name' in session and session['user_role'] == "Admin" %}
+            <li><a href="/list-all-users">Ver Todos los Usuarios</a></li>
+            <li><a href="/upload-historic-data">Subir Datos Históricos</a></li>
+            <li><a href="/delete-historic-data">Eliminar Datos Históricos</a></li>
+        {% elif 'user_name' in session and session['user_role'] == "User" %}
+            <li><a href="/create-portfolio">Crear Cartera</a></li>
+            <li><a href="/list-my-portfolios?id={{session['user_id']}}">Lista Carteras</a></li>
+        {% endif %}
+    </ul>
+{% endblock %}

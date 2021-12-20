@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta content="initial-scale=1,width=device-width" name="viewport">
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <title>{% block title %}Home{% endblock %}</title>
+    </head>
+    <body>
+        <header>
+            <a href='/'><h1>APLICACIÓN WEB DE BACKTESTING</h1></a>
+            <div>
+                {% if 'user_name' in session %}
+                    Bienvenido, <a href="/user?id={{session['user_id']}}">{{session["user_full_name"]}}</a>
+                    <div><a href="/logout">Logout</a></div>
+                {% else %}
+                    Usuario desconocido 
+                    <div>
+                        <a href="/sign-up">Registrarse</a>
+                        <a href="/login">Login</a>
+                    </div>
+                {% endif %}
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'error' %}
+                        <div>
+                            {{ message }}
+                        </div>
+                    {% else %}
+                        <div>
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div>
+                <main>
+                    <article>
+                        {% block content%}
+                        {% endblock %}
+                    </article>
+                </main>
+        </div>
+    </body>
+    <script type="text/javascript" src="{{ url_for('static', filename='user.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='portfolio.js') }}"></script>
+</html>

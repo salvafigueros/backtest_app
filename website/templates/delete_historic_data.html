@@ -1,0 +1,18 @@
+{% extends  "base.html" %}
+{% block title %} Eliminar Datos Históricos {% endblock %}
+
+{% block content %}  
+
+    <form method="POST">
+        <fieldset>
+            <legend>Eliminar Datos Históricos</legend>
+            <p>Rellenar los campos que aparecen a continuación para eliminar los datos históricos de los activos financieros correspondientes.</p>
+            <p><label>Ticker:</label> <input type="text" name="ticker" /></p>
+            <p><label>Fecha de inicio:</label> <input type="date" name="first_date" /></p>
+            <p><label>Fecha de final:</label> <input type="date" name="last_date" /></p>
+            <p><label>Eliminar todo:</label> <input type="checkbox" name="delete_all" /></p>
+            <button type="submit" name="delete_historic_data">Eliminar</button>
+        </fieldset>
+    </form>
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends  "base.html" %}
+{% block title %} Search User {% endblock %}
+
+{% block content %}  
+
+    <h1>Lista de Usuarios</h1>
+    {% if list_users %}
+        {% for user in list_users %}
+            <ul>
+                <li>
+                    <a href="/user?id={{user.id}}">{{user.user_name}}</a>
+                    {% if 'user_name' in session and session['user_role'] == "Admin" %}
+                        <form action="/delete-user" method="POST">
+                            <input type="hidden" name="user_name" value="{{user.user_name}}"/>
+                            <button type="submit" name="delete_user" onclick="return confirm_delete_user()">Eliminar</button>
+                        </form>
+                    {% endif %}
+                </li>
+            </ul>
+        {% endfor %}
+    {% else %}
+            <p>No se ha encontrado ningún usuario!</p>
+    {% endif %}
+
+{% endblock %}
