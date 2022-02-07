@@ -138,7 +138,8 @@ class Futures(Asset):
 
         df.rename(columns={'Date': 'date', 'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Adj Close': 'adjusted_close', 'Volume': 'volume'}, inplace = True)
         df.insert(0, 'futures_id', self.id)
-        print(df)
+        df = df.dropna()
+        
 
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
@@ -180,16 +181,21 @@ class Futures(Asset):
 
         return True
 
-    def get_futures_prices_dates(self, first_date, last_date):
-        first_date_time = datetime.strptime(first_date, '%Y-%m-%d').date()
-        last_date_time = datetime.strptime(last_date, '%Y-%m-%d').date()
-
+    def get_futures_prices_dates(self, first_date=None, last_date=None):
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
-        sql = "SELECT date, open, high, low, close, adjusted_close, volume FROM futures_prices WHERE futures_id=%s AND date BETWEEN %s AND %s ORDER BY date"
-        sql_query = pd.read_sql_query(sql, conn_bd, params=[self.id, first_date_time, last_date_time]) 
+
+        if (first_date is None) or (last_date is None):
+            sql = "SELECT date, open, high, low, close, adjusted_close, volume FROM futures_prices WHERE futures_id=%s ORDER BY date"
+            sql_query = pd.read_sql_query(sql, conn_bd, params=[self.id]) 
+        else:
+            first_date_time = datetime.strptime(first_date, '%Y-%m-%d').date()
+            last_date_time = datetime.strptime(last_date, '%Y-%m-%d').date()
+            sql = "SELECT date, open, high, low, close, adjusted_close, volume FROM futures_prices WHERE futures_id=%s AND date BETWEEN %s AND %s ORDER BY date"
+            sql_query = pd.read_sql_query(sql, conn_bd, params=[self.id, first_date_time, last_date_time]) 
+
         df = pd.DataFrame(sql_query, columns = ['date', 'open', 'high', 'low', 'close', 'adjusted_close', 'volume'])
-        print(df)
+        df.set_index('date', inplace=True)
         conn_bd.commit()
 
         conn_cursor.close()

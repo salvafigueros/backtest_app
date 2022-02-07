@@ -5,15 +5,17 @@ from .asset import Asset
 import yfinance as yf
 import numpy as np
 from decimal import *
+from pandas_datareader import data
 
 
 class Stock(Asset):
 
-    def __init__(self, ticker, company_name, market, currency):
+    def __init__(self, ticker, company_name, market, currency, metric=0):
         self.ticker = ticker
         self.company_name = company_name
         self.market = market
         self.currency = currency
+        self.metric = metric
 
     def __str__(self):
         """
@@ -163,7 +165,8 @@ class Stock(Asset):
 
         df.rename(columns={'Date': 'date', 'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Adj Close': 'adjusted_close', 'Volume': 'volume'}, inplace = True)
         df.insert(0, 'stock_id', self.id)
-        print(df)
+        df = df.dropna()
+        
 
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
@@ -206,16 +209,22 @@ class Stock(Asset):
         return True
 
 
-    def get_stock_prices_dates(self, first_date, last_date):
-        first_date_time = datetime.strptime(first_date, '%Y-%m-%d').date()
-        last_date_time = datetime.strptime(last_date, '%Y-%m-%d').date()
+    def get_stock_prices_dates(self, first_date=None, last_date=None):
 
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
-        sql = "SELECT date, open, high, low, close, adjusted_close, volume FROM stock_prices WHERE stock_id=%s AND date BETWEEN %s AND %s ORDER BY date"
-        sql_query = pd.read_sql_query(sql, conn_bd, params=[self.id, first_date_time, last_date_time]) 
+
+        if(first_date is None) or (last_date is None):
+            sql = "SELECT date, open, high, low, close, adjusted_close, volume FROM stock_prices WHERE stock_id=%s ORDER BY date"
+            sql_query = pd.read_sql_query(sql, conn_bd, params=[self.id]) 
+        else:
+            first_date_time = datetime.strptime(first_date, '%Y-%m-%d').date()
+            last_date_time = datetime.strptime(last_date, '%Y-%m-%d').date()
+            sql = "SELECT date, open, high, low, close, adjusted_close, volume FROM stock_prices WHERE stock_id=%s AND date BETWEEN %s AND %s ORDER BY date"
+            sql_query = pd.read_sql_query(sql, conn_bd, params=[self.id, first_date_time, last_date_time]) 
+
         df = pd.DataFrame(sql_query, columns = ['date', 'open', 'high', 'low', 'close', 'adjusted_close', 'volume'])
-        print(df)
+        df.set_index('date', inplace=True)
         conn_bd.commit()
 
         conn_cursor.close()
@@ -230,3 +239,71 @@ class Stock(Asset):
         last_quote = (data.tail(1)['Close'].iloc[0])
 
         return Decimal(last_quote.item())
+
+
+    @staticmethod
+    def get_all_stocks():
+        conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
+        conn_cursor = conn_bd.cursor(buffered=True)
+        conn_cursor.execute("SELECT * FROM stocks S")
+        conn_bd.commit()
+
+        if conn_cursor.rowcount > 0:
+            records = conn_cursor.fetchall()
+            list_stocks = []
+            for row in records:
+                stock = Stock(row[1], row[2], row[3], row[4], row[5])
+                stock.id = row[0]
+                list_stocks.append(stock)
+            
+            conn_cursor.close()
+            conn_bd.close()
+            return list_stocks
+        else:
+            pass
+            #print("Error al consultar en la BD")
+        
+        conn_cursor.close()
+        conn_bd.close()
+
+        return []
+
+
+    @staticmethod
+    def update_metric(stock):
+        conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
+        conn_cursor = conn_bd.cursor()
+        conn_cursor.execute("UPDATE stocks S SET metric=%s WHERE S.id=%s", (stock.metric, stock.id))
+        conn_bd.commit()
+
+        conn_cursor.close()
+        conn_bd.close()
+
+        return stock
+
+    @staticmethod
+    def get_list_stocks_by_metric(metric):
+        list_stocks = Stock.get_all_stocks()
+        list_stocks_with_metric = []
+
+        list_tickers = []
+        for stock in list_stocks:
+            list_tickers.append(stock.ticker)
+
+        """
+        df = data.get_quote_yahoo(list_tickers)
+        pd.set_option =("display.max_columns", None)
+        print(df.head())
+        """
+
+        market_caps = data.get_quote_yahoo(list_tickers)[metric]
+        list_market_caps = market_caps.values.tolist()
+
+        for stock, market_cap in zip(list_stocks, list_market_caps):
+            stock.metric = market_cap
+            stock = Stock.update_metric(stock)
+            stock.metric = "{:,}".format(stock.metric).replace(',', '.')
+            list_stocks_with_metric.append(stock)
+            
+        
+        return list_stocks_with_metric

@@ -8,9 +8,11 @@ def create_app():
 
     from .views import views
     from .auth import auth
+    from .views_backtesting import views_backtesting
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
+    app.register_blueprint(views_backtesting, url_prefix='/')
 
     return app
 

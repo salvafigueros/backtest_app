@@ -5,6 +5,9 @@
     <ul>
         <li><a href="/search-user">Buscar Usuario</a></li>
         <li><a href="/search-portfolio">Buscar Cartera</a></li>
+        <li><a href="/backtesting/asset">Backtesting Activo</a></li>
+        <li><a href="/backtesting/portfolio">Backtesting Cartera</a></li>
+        <li><a href="/backtesting/metrics">Backtesting por Grupos</a></li>
         {% if 'user_name' in session and session['user_role'] == "Admin" %}
             <li><a href="/list-all-users">Ver Todos los Usuarios</a></li>
             <li><a href="/upload-historic-data">Subir Datos Históricos</a></li>

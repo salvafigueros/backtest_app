@@ -1,0 +1,84 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+
+
+    <div>
+        <div id="">
+            <form method="POST" action="">
+                <fieldset>
+                    <legend>Backtesting</legend> 
+                    <p>Introduce los siguientes datos para crear una cartera:</p>
+                    <ul>
+                        <li>Activo: activo sobre el que hacer el backtesting </li>
+                        <li>Capital: capital inicial </li>
+                        <li>Moneda: moneda en la que va a estar denominado el backtesting</li>
+                        <li>Marco Temporal: elegir el marco temporal sobre el que computar el máximo y mínimo de la estrategia </li>
+                        <li>Estrategia: seleccionar la estrategia a utilizar</li>
+                        <li>Salida: elegir el tipo de salida</li>
+                    </ul>
+                    <p>Activos:</p>
+                    <a href="javascript:void(0);" class="add_asset_backtesting_portfolio" title="Add field">Añadir Activo<img src=""/></a>
+                    <div class="field_wrapper_backtesting_portfolio">
+                        <div>
+                            <p><label>Ticker:</label> <input type="text" name="asset[]" /></p>
+                        </div>
+                    </div>
+                    <p><label>Capital:</label> <input type="number" name="starting_cash" /></p>
+                    <p><label>Moneda:</label> <input type="text" name="currency" /></p>
+                    <p>
+                        <label>Marco Temporal:</label>
+                        <select name="time_frame">
+                            <option value=5>5 días</option>
+                            <option value=10>10 días</option>
+                            <option value=15>15 días</option>
+                            <option value=30>1 mes</option>
+                            <option value=60>3 meses</option>
+                            <option value=180>6 meses</option>
+                            <option value=360>1 año</option>
+                        </select>
+                    </p>
+                    <p>
+                        <label>Estrategia:</label>
+                        <input type="checkbox" name="strategy[]" value="buymax" /> Comprar Máximos
+                        <input type="checkbox" name="strategy[]" value="shortmax" /> Vender Máximos
+                        <input type="checkbox" name="strategy[]" value="buymin" /> Comprar Mínimos
+                        <input type="checkbox" name="strategy[]" value="shortmin"> Vender Mínimos
+                    </p>
+                    <p>
+                        <label>Salida:</label>
+                        <select id="exit" name="exit">
+                            <option value="exittime">Salida Temporal</option>
+                            <option value="trailingstop">Salida con Trailing Stop</option>
+                        </select>
+                    </p>
+                    <div id="exit_time_configuration" style="display: block">
+                        <p>
+                            <label>Stop Temporal:</label>
+                            <select name="exit_time_frame">
+                                <option value=1>50% de los días del Marco Temporal</option>
+                                <option value=2>100% de los días del Marco Temporal</option>
+                                <option value=3>150% de los días del Marco Temporal</option>
+                            </select>
+                        </p>
+                    </div>
+                    <div id="trailing_stop_configuration" style="display: none">
+                        <p>
+                            <label>Multiplicador ATR:</label>
+                            <select name="ATR_multiplier">
+                                <option value=1>1</option>
+                                <option value=2>2</option>
+                                <option value=3>3</option>
+                            </select>
+                        </p>
+                    </div>
+                    <button type="submit" name="submit_backtesting_asset">Backtest</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
+    
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+
+
+    <div>
+        <div id="">
+            <form method="POST" action="">
+                <fieldset>
+                    <legend>Backtesting Grupos de Activos</legend> 
+                    <p>Elige la métrica en función de la cual agrupar los activos:</p>
+                    <ul>
+                        <li>Capitalización de Mercado: valor total de las acciones de una empresa en el mercado. </li>
+                        <li>Volumen: volumen medio de los 10 últimos días de trading de cada acción. </li>
+                    </ul>
+                    <p>
+                        <label>Métrica:</label>
+                        <select name="metric">
+                            <option value="marketCap">Capitalización de Mercado</option>
+                            <option value="averageDailyVolume10Day">Volumen</option>
+                        </select>
+                    </p>
+                    <button type="submit" name="submit_metric">OK</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
+    
+
+{% endblock %}
