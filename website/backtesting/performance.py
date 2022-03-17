@@ -41,3 +41,28 @@ def create_drawdowns(equity_curve):
         drawdown[t]= hwm[t] - equity_curve[t]
         duration[t]= 0 if drawdown[t] == 0 else duration[t-1] + 1
     return drawdown.max(), duration.max()
+
+
+def create_cagr(equity, periods=252):
+    """
+    Calculates the Compound Annual Growth Rate (CAGR)
+    for the portfolio, by determining the number of years
+    and then creating a compound annualised rate based
+    on the total return.
+    Parameters:
+    equity - A pandas Series representing the equity curve.
+    periods - Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
+    """
+    years = len(equity) / float(periods)
+    return (equity[-1] ** (1.0 / years)) - 1.0
+
+
+def create_sortino_ratio(returns, periods=252):
+    """
+    Create the Sortino ratio for the strategy, based on a
+    benchmark of zero (i.e. no risk-free rate information).
+    Parameters:
+    returns - A pandas Series representing period percentage returns.
+    periods - Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
+    """
+    return np.sqrt(periods) * (np.mean(returns)) / np.std(returns[returns < 0])

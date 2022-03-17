@@ -1,0 +1,14 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+
+    <form method="POST">
+        <fieldset>
+            <legend>Buscar Backtesting</legend>
+            <p><label>Activo:</label> <input type="text" name="asset" /></p>
+            <button type="submit" name="search_backtesting">Buscar</button>
+        </fieldset>
+    </form>
+
+{% endblock %}

@@ -1,8 +1,10 @@
-from .performance import create_sharpe_ratio, create_drawdowns
+from .performance import create_sharpe_ratio, create_drawdowns, create_cagr, create_sortino_ratio
 from .portfolioBacktesting import PortfolioBacktesting
 from math import floor
 from .event.orderEvent import OrderEvent
 import pandas as pd 
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 
 class ConservativePortfolio(PortfolioBacktesting):
@@ -21,6 +23,9 @@ class ConservativePortfolio(PortfolioBacktesting):
         self.all_holdings = self.construct_all_holdings()
         self.current_holdings = self.construct_current_holdings()
 
+        self.all_returns = self.construct_all_returns()
+        self.latest_positions = dict( (k,v) for k, v in [(t, 0) for t in self.ticker_list] )
+
         #self.kelly_criterion = self.calculate_all_kelly_criterions()
 
 
@@ -36,6 +41,12 @@ class ConservativePortfolio(PortfolioBacktesting):
         d['commission'] = 0.0
         d['total'] = self.starting_cash
         return [d]
+
+    def construct_all_returns(self):
+        d = dict( (k,v) for k, v in [(t, 0.0) for t in self.ticker_list] )
+        d['datetime'] = self.start_date
+        return d
+
 
     def construct_current_holdings(self):
         d = dict( (k,v) for k, v in [(t, 0.0) for t in self.ticker_list] )
@@ -125,6 +136,31 @@ class ConservativePortfolio(PortfolioBacktesting):
         self.current_holdings['cash'] -= (cost + fill.commission)
         self.current_holdings['total'] -= (cost + fill.commission)
 
+    def update_returns_from_fill(self, fill):
+        fill_dir = 0
+        if fill.direction == 'BUY':
+            fill_dir = 1
+        if fill.direction == 'SELL':
+            fill_dir = -1
+
+        # Without commissions
+        if fill_dir != 0 and self.latest_positions[fill.ticker] != 0:
+            fill_cost = self.bars.get_latest_bars(fill.ticker)[0][5]  # Close price
+            cost = fill_dir * fill_cost * fill.quantity
+            return_position = 0
+            if fill_dir == 1:
+                return_position = self.latest_positions[fill.ticker] + (cost)
+            else:
+                return_position = self.latest_positions[fill.ticker] + (cost)
+
+            self.all_returns[fill.ticker] += return_position
+            self.latest_positions[fill.ticker] = 0
+        elif fill_dir != 0 and self.latest_positions[fill.ticker] == 0:
+            fill_cost = self.bars.get_latest_bars(fill.ticker)[0][5]  # Close price
+            self.latest_positions[fill.ticker] = fill_dir * fill_cost * fill.quantity
+
+        #self.current_holdings[fill.ticker] += cost
+
 
     def update_fill(self, event):
         """
@@ -134,6 +170,7 @@ class ConservativePortfolio(PortfolioBacktesting):
         if event.type == 'FILL':
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
+            self.update_returns_from_fill(event)
 
 
     def calculate_position_sizing():
@@ -196,7 +233,16 @@ class ConservativePortfolio(PortfolioBacktesting):
         curve['returns'] = curve['total'].pct_change()
         curve['equity_curve'] = (1.0+curve['returns']).cumprod()
         self.equity_curve = curve
+ 
 
+    def plot_equity_curve(self):
+        plt.plot(self.equity_curve.index, self.equity_curve['equity_curve'])
+        plt.title('Equity Curve Vs Year')
+        plt.xlabel('Year')
+        plt.ylabel('Equity Curve')
+        plt.savefig('/static/equity_curve.png')
+
+        return '/static/equity_curve.png'
 
     def output_summary_stats(self):
         """
@@ -204,14 +250,21 @@ class ConservativePortfolio(PortfolioBacktesting):
         as Sharpe Ratio and drawdown information.
         """
         total_return = self.equity_curve['equity_curve'][-1]
+
         returns = self.equity_curve['returns']
         pnl = self.equity_curve['equity_curve']
 
         sharpe_ratio = create_sharpe_ratio(returns)
         max_dd, dd_duration = create_drawdowns(pnl)
 
-        stats = [("Total Return", "%0.2f%%" % ((total_return - 1.0) * 100.0)),
+        cagr = create_cagr(pnl)
+        sortino_ratio = create_sortino_ratio(returns)
+
+        stats = [("¿Es buena o no?", "Sí" if ((total_return - 1.0) * 100.0) > 10 else "No"),
+                 ("Total Return", "%0.2f%%" % ((total_return - 1.0) * 100.0)),
                  ("Sharpe Ratio", "%0.2f" % sharpe_ratio),
                  ("Max Drawdown", "%0.2f%%" % (max_dd * 100.0)),
-                 ("Drawdown Duration", "%d" % dd_duration)]
+                 ("Drawdown Duration", "%d" % dd_duration),
+                 ("Sortino Ratio", "%0.2f" % sortino_ratio),
+                 ("CAGR", "%0.4f%%" % cagr)]
         return stats

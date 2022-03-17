@@ -8,6 +8,10 @@
         <li><a href="/backtesting/asset">Backtesting Activo</a></li>
         <li><a href="/backtesting/portfolio">Backtesting Cartera</a></li>
         <li><a href="/backtesting/metrics">Backtesting por Grupos</a></li>
+        <li><a href="/backtesting/optimization-weight">Optimizar Cartera de Activos Financieros</a></li>
+        <li><a href="/backtesting/optimization-portfolio">Optimizar Cartera</a></li>
+        <li><a href="/backtesting/live-trading">Trading en Tiempo Real</a></li>
+        <li><a href="/backtesting/search-backtesting">Buscar Backtesting</a></li>
         {% if 'user_name' in session and session['user_role'] == "Admin" %}
             <li><a href="/list-all-users">Ver Todos los Usuarios</a></li>
             <li><a href="/upload-historic-data">Subir Datos Históricos</a></li>
@@ -15,6 +19,7 @@
         {% elif 'user_name' in session and session['user_role'] == "User" %}
             <li><a href="/create-portfolio">Crear Cartera</a></li>
             <li><a href="/list-my-portfolios?id={{session['user_id']}}">Lista Carteras</a></li>
+            <li><a href="/backtesting/list-my-backtestings?id={{session['user_id']}}">Lista Backtestings</a></li>
         {% endif %}
     </ul>
 {% endblock %}

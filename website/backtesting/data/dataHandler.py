@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from .event.marketEvent import MarketEvent
+from ..event.marketEvent import MarketEvent
 
 class DataHandler(object):
 

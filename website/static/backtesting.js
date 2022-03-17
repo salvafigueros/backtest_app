@@ -1,6 +1,6 @@
-document.getElementById('exit').addEventListener('change', function () {
-    var style_trailing = this.value == "trailingstop" ? 'block' : 'none';
-    var style_time = this.value == "exittime" ? 'block' : 'none';
+document.getElementById('exit_trade').addEventListener('change', function () {
+    var style_trailing = this.value == "trailing_stop" ? 'block' : 'none';
+    var style_time = this.value == "exit_time" ? 'block' : 'none';
     document.getElementById('trailing_stop_configuration').style.display = style_trailing;
     document.getElementById('exit_time_configuration').style.display = style_time;
 });
@@ -23,3 +23,38 @@ $(document).ready(function(){
         x--; //Decrement field counter
     });
 });
+
+
+function saveBacktesting(user_id, starting_cash, currency, ticker_list, strategy, time_frame, exit_trade, exit_configuration){
+    $.ajax({
+        type: "POST",
+        url: "/backtesting/save-backtesting",
+        data: JSON.stringify({ user_id: user_id,
+            starting_cash: starting_cash,
+            currency: currency,
+            ticker_list: ticker_list,
+            strategy: strategy,
+            time_frame: time_frame,
+            exit_trade: exit_trade,
+            exit_configuration: exit_configuration}),
+        contentType: "application/json",
+        datatType: 'json',
+        success:function(result){
+            $(result["button"]).html("Guardado");
+        }
+    });
+}
+
+function shareBacktesting(backtesting_id){
+    $.ajax({
+        type: "POST",
+        url: "/backtesting/share",
+        data: JSON.stringify({ backtesting_id: backtesting_id}),
+        contentType: "application/json",
+        datatType: 'json',
+        success:function(result){
+            $(".share_backtesting").html("Compartido");
+        }
+    });
+}
+

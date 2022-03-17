@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from .user import User
 from .stock import Stock
 from .futures import Futures
-from .portfolio import Portfolio
-from .transaction import Transaction
-from .position import Position
+from .portfolio.portfolio import Portfolio
+from .portfolio.transaction import Transaction
+from .portfolio.position import Position
 from functools import wraps
 import datetime
 import pandas as pd
@@ -242,7 +242,7 @@ def view_portfolio():
     return redirect(url_for('views.home'))
 
 @views.route('/search-portfolio', methods=['GET', 'POST'])
-def search_user():
+def search_portfolio():
     if request.method == 'POST':
         asset = request.form.get('asset') 
         if asset:

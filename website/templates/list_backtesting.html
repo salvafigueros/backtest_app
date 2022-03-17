@@ -1,0 +1,27 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+    <h1>LISTA DE BACKTESTINGS</h1>
+    <div>
+        {% if list_backtesting %}
+            <ul>
+                {% for backtesting in list_backtesting %}
+                    <li><a href="/backtesting/view?id={{backtesting.id}}">Backtesting {{backtesting.id}}</a></li>
+                        <ul>
+                            <li>Activos: {{backtesting.backtesting_assets.ticker_list}}</li>
+                            <li>Capital: {{backtesting.starting_cash}}</li>
+                            <li>Moneda: {{backtesting.currency}}</li>
+                            <li>Estrategia: {{backtesting.strategy.get_name()}}</li>
+                            <li>Marco Temporal: {{backtesting.strategy.time_frame}} días</li>
+                            <li>Salida: {{backtesting.strategy.exit_trade}}</li>
+                            <li>Parámetro de Salida: {{backtesting.strategy.exit_configuration}}</li>
+                        </ul>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No existen backtestings!</p>
+        {% endif %}
+    </div>
+
+{% endblock %}

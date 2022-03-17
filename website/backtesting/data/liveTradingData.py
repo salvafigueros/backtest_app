@@ -1,11 +1,14 @@
-from .stock import Stock
-from .futures import Futures
+from ...stock import Stock
+from ...futures import Futures
 from .dataHandler import DataHandler
-from .event.marketEvent import MarketEvent
+from ..event.marketEvent import MarketEvent
 import datetime
 import pandas as pd
 
-class HistoricDBDataHandler(DataHandler):
+from datetime import date, datetime, timedelta
+import pandas_datareader.data as web
+
+class LiveTradingData(DataHandler):
 
     def __init__(self, events, ticker_list):
         self.events = events
@@ -22,24 +25,24 @@ class HistoricDBDataHandler(DataHandler):
     def _get_data_db(self):
         comb_index = None
         for t in self.ticker_list:
-            stock = Stock.get_stock_by_ticker(t)
-            future = Futures.get_futures_by_ticker(t)
+            todays_date = date.today()
+            n = 30
+            date_n_days_ago = date.today() - timedelta(days=n)
+            yahoo_data = web.DataReader('ACC.NS', t, date_n_days_ago, todays_date)
 
-            if stock:
-                self.ticker_data[t] = stock.get_stock_prices_dates()
-            elif future:
-                self.ticker_data[t] = future.get_futures_prices_dates()
+            #add filter - get data, where column Volume is not 0
+            yahoo_data = yahoo_data[yahoo_data.Volume != 0]
 
-            if stock or future:
+            self.ticker_data[t] = yahoo_data.tail(1)
                 
-                # Combine the index to pad forward values
-                if comb_index is None:
-                    comb_index = self.ticker_data[t].index
-                else:
-                    comb_index.union(self.ticker_data[t].index)
+            # Combine the index to pad forward values
+            if comb_index is None:
+                comb_index = self.ticker_data[t].index
+            else:
+                comb_index.union(self.ticker_data[t].index)
 
-                # Set the latest symbol_data to None
-                self.latest_ticker_data[t] = []
+            # Set the latest symbol_data to None
+            self.latest_ticker_data[t] = []
 
         # Reindex the dataframes
         for t in self.ticker_list:

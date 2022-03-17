@@ -8,6 +8,20 @@
         {% for index, tuple in value %}
             <p>{{tuple[0]}}: {{tuple[1]}}</p>
         {% endfor %}
+        {% if 'user_name' in session and session['user_role'] == "User"  %}
+            <div>
+
+            </div>
+            <button class="{{ key }}" type="button" onClick="saveBacktesting({{ session['user_id'] }},
+                                            {{ list_backtesting_info[key].starting_cash }}, 
+                                            '{{ list_backtesting_info[key].currency }}',
+                                            {{ list_backtesting_info[key].backtesting_assets.ticker_list }},
+                                            '{{ list_backtesting_info[key].strategy.get_name() }}',
+                                            {{ list_backtesting_info[key].strategy.time_frame }},
+                                            '{{ list_backtesting_info[key].strategy.exit_trade }}',
+                                            {{ list_backtesting_info[key].strategy.exit_configuration }})">
+                                        Guardar</button> 
+        {% endif %}
     {% endfor %}
 
 {% endblock %}

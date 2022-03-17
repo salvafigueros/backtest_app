@@ -307,3 +307,17 @@ class Stock(Asset):
             
         
         return list_stocks_with_metric
+
+    @staticmethod
+    def get_df_prices(ticker_list):
+        df = pd.DataFrame()
+        
+        for ticker in ticker_list:
+            stock = Stock.get_stock_by_ticker(ticker)
+
+            if stock:
+                df[ticker] = stock.get_stock_prices_dates()['adjusted_close']
+
+        return df
+
+        

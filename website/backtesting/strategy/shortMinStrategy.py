@@ -1,10 +1,10 @@
 from .strategy import Strategy
-from .event.signalEvent import SignalEvent
+from ..event.signalEvent import SignalEvent
 import numpy as np 
-import pandas as pd
+import pandas as pd 
 
-class ShortMaxStrategy(Strategy):
-
+class ShortMinStrategy(Strategy):
+   
     def __init__(self, bars, events, time_frame, exit_trade, exit_configuration):
         self.bars = bars
         self.ticker_list = self.bars.ticker_list 
@@ -15,10 +15,12 @@ class ShortMaxStrategy(Strategy):
 
         self.bought = self._calculate_initial_bought()
         self.num_bars = self._calculate_initial_num_bars()
-        self.maximum = self._calculate_initial_maximum()
+        self.minimum = self._calculate_initial_minimum()
         self.days_strategy = self._calculate_initial_days_strategy()
         self.trailing_stop = self._calculate_initial_trailing_stop()
 
+    def get_name(self):
+        return "shortmin"
 
     def _calculate_initial_bought(self):
         bought = {}
@@ -34,18 +36,18 @@ class ShortMaxStrategy(Strategy):
 
         return num_bars
 
-    def _calculate_initial_maximum(self):
-        maximum = {}
+    def _calculate_initial_minimum(self):
+        minimum = {}
         for t in self.ticker_list:
-            maximum[t] = None
+            minimum[t] = None
 
-        return maximum
+        return minimum
 
-    def _update_maximum(self, ticker, bars):
-        if self.maximum[ticker] is None:
-            self.maximum[ticker] = bars[0][3] #High
+    def _update_minimum(self, ticker, bars):
+        if self.minimum[ticker] is None:
+            self.minimum[ticker] = bars[0][4] #Low
         else:
-            self.maximum[ticker] = max(self.bars.get_latest_bars(ticker, N=self.time_frame), key=lambda item:item[3])[3]
+            self.minimum[ticker] = min(self.bars.get_latest_bars(ticker, N=self.time_frame), key=lambda item:item[4])[4]
 
     def _calculate_initial_days_strategy(self):
         days_strategy = {}
@@ -105,14 +107,14 @@ class ShortMaxStrategy(Strategy):
 
                     if(self.num_bars[t] > self.time_frame):
                         if self.bought[t] == False:
-                            if bars[0][3] > self.maximum[t]:
+                            if bars[0][4] <= self.minimum[t]:
                                 signal = SignalEvent(bars[0][0], bars[0][1], 'SHORT')
                                 self.events.put(signal)
                                 self.bought[t] = True 
                                 self._update_trailing_stop(t, self.bars.get_latest_bars(t, N=2))
                         else:
                             self.days_strategy[t] += 1
-                            if self.exit_trade == "exittime":
+                            if self.exit_trade == "exit_time":
                                 if self.days_strategy[t] == int(self.exit_configuration * 0.5 * self.time_frame):
                                     signal = SignalEvent(bars[0][0], bars[0][1], 'EXIT')
                                     self.events.put(signal)
@@ -127,5 +129,4 @@ class ShortMaxStrategy(Strategy):
                                 self._update_trailing_stop(t, self.bars.get_latest_bars(t, N=2))
                                 
 
-                    self._update_maximum(t, bars)
-                
+                    self._update_minimum(t, bars)

@@ -1,0 +1,47 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+
+
+    <div>
+        <div id="">
+            <h3>Backtesting {{backtesting.id}} de {{user.user_name}}</h3>
+                {% if 'user_name' in session and session['user_id'] == user.id %}
+                    {% if backtesting.shared == False %}
+                        <button class="share_backtesting" type="button" onClick="shareBacktesting({{ backtesting.id }})"> Compartir</button> 
+                    {% else %} 
+                        <p> Has compartido este backtesting </p>
+                    {% endif %}
+                    <form method="POST" action="/backtesting/delete">
+                        {{ form.csrf_token }}
+                        {{form.backtesting_id(value=backtesting.id)}}
+                        <button type="submit" name="delete_backtesting">Eliminar</button> 
+                    </form>
+                {% endif %}
+
+
+            <form method="POST" action="/backtesting/view">
+                {{ form.csrf_token }}
+
+                {{form.backtesting_id(value=backtesting.id)}}
+                <div id="ticker_list">
+                    <p><label>Lista de Activos:</label> 
+                    {% for ticker in backtesting.backtesting_assets.ticker_list  %}
+                        {{ ticker }}, 
+                    {% endfor %} 
+                    </p>
+                </div>
+
+                <p><label>Estrategia: </label> {{ backtesting.strategy.get_name() }}</p>
+                <p><label>Marco Temporal: </label> {{ backtesting.strategy.time_frame }} días</p> 
+                <p><label>Tipo de Salida: </label> {{ backtesting.strategy.exit_trade }}</p> 
+                <p><label>Configuración Salida: </label> {{ backtesting.strategy.exit_configuration }}</p> 
+                <button type="submit" name="run_backtesting">Ejecutar Backtesting</button>
+            </form>
+        </div>
+    </div>
+
+    
+
+{% endblock %}

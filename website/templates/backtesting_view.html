@@ -1,0 +1,44 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+
+
+    <div>
+        <div id="">
+                <h3>Backtesting {{backtesting.id}} de {{user.user_name}}</h3>
+                {% if 'user_name' in session and session['user_id'] == user.id %}
+                    {% if backtesting.shared == False %}
+                        <button class="share_backtesting" type="button" onClick="shareBacktesting({{ backtesting.id }})"> Compartir</button> 
+                    {% else %} 
+                        <p> Has compartido este backtesting </p>
+                    {% endif %}
+                {% endif %}
+                <div id="ticker_list">
+                    <p><label>Lista de Activos:</label> 
+                    {% for ticker in backtesting.backtesting_assets.ticker_list  %}
+                        {{ ticker }}, 
+                    {% endfor %} 
+                    </p>
+                </div>
+
+                <p><label>Estrategia: </label> {{ backtesting.strategy.get_name() }}</p>
+                <p><label>Marco Temporal: </label> {{ backtesting.strategy.time_frame }} días</p> 
+                <p><label>Tipo de Salida: </label> {{ backtesting.strategy.exit_trade }}</p> 
+                <p><label>Configuración Salida: </label> {{ backtesting.strategy.exit_configuration }}</p> 
+
+                <h4>Resultados</h4>
+                {% for key, value in backtesting_output %}
+                    <p>{{ key }}: {{ value }}</p>
+                {% endfor %}
+
+                <p>Equity Curve</p>
+                <img src={{url}} alt="Equity Curve">
+
+
+        </div>
+    </div>
+
+    
+
+{% endblock %}

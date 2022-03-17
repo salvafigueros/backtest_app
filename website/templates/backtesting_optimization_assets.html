@@ -19,22 +19,24 @@
                         <li>Estrategia: seleccionar la estrategia a utilizar</li>
                         <li>Salida: elegir el tipo de salida</li>
                     </ul>
-                    <p>{{ form.asset.label }} {{ form.asset}} </p>
+                    <p>Activos:</p>
+                    <a href="javascript:void(0);" class="add_asset_backtesting_portfolio" title="Add field">Añadir Activo<img src=""/></a>
+                    <div class="field_wrapper_backtesting_portfolio">
+                        <div>
+                            <p><label>Ticker:</label> <input type="text" name="asset[]" /></p>
+                        </div>
+                    </div>
+                    <p>
+                        <label>Salida:</label>
+                        <select id="exit_trade" name="exit_trade">
+                            <option value="exit_time">Salida Temporal</option>
+                            <option value="trailing_stop">Salida con Trailing Stop</option>
+                        </select>
+                    </p>
                     <p>{{ form.starting_capital.label }} {{ form.starting_capital }}</p>
                     <p>{{ form.currency.label }} {{ form.currency }}</p>
-                    <p>{{ form.time_frame.label }} {{ form.time_frame }}</p>
-                    <p>{{ form.buymax.label }} {{ form.buymax }}</p>
-                    <p>{{ form.shortmax.label }} {{ form.shortmax }}</p>
-                    <p>{{ form.buymin.label }} {{ form.buymin }}</p>
-                    <p>{{ form.shortmin.label }} {{ form.shortmin }}</p>
-                    <p>{{ form.exit_trade.label }} {{ form.exit_trade }}</p>
-                    <div id="exit_time_configuration" style="display: block">
-                        <p>{{ form.exit_time_frame.label }} {{ form.exit_time_frame }}</p>
-                    </div>
-                    <div id="trailing_stop_configuration" style="display: none">
-                        <p>{{ form.atr_multiplier.label }} {{ form.atr_multiplier }}</p>
-                    </div>
-                    <button type="submit" name="submit_backtesting_asset">Backtest</button>
+                    <p>{{ form.return_portfolio.label }} {{ form.return_portfolio }}</p>
+                    <button type="submit" name="submit_backtesting_optimization_assets">Optimizar</button>
                 </fieldset>
             </form>
         </div>

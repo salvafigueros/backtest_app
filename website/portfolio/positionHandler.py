@@ -3,8 +3,8 @@ from .position import Position
 from collections import OrderedDict
 from .positionPortfolio import PositionPortfolio
 from .transaction import Transaction
-from .stock import Stock
-from .futures import Futures
+from ..stock import Stock
+from ..futures import Futures
 import mysql.connector
 from forex_python.converter import CurrencyRates
 import datetime

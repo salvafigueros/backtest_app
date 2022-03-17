@@ -1,7 +1,7 @@
 import mysql.connector
 import numpy as np
 import datetime
-from .stock import Stock
+from ..stock import Stock
 from decimal import *
 
 class Transaction(object):

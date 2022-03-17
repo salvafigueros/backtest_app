@@ -1,0 +1,32 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+
+
+    <div>
+        <div id="">
+            <h3>Optimización de Carteras</h3>
+            <div id="ticker_list">
+                <p><label>Lista de Activos:</label> 
+                {% for ticker in ticker_list  %}
+                    {{ ticker }}, 
+                {% endfor %} 
+                </p>
+            </div>
+            <p>Máximo Rendimiento: {{return_user}}</p>
+            <p>Riesgo: {{std_user}}</p>
+            <p>Pesos: {{weight}}</p>
+            <p>Capital en cada Activo </p>
+            {% for w in weight %}
+                <p> {{ w*starting_capital }} </p>
+            {% endfor %}
+
+            <p>Frontera Eficiente</p>
+            <img src={{url}} alt="Efficient Frontier">
+        </div>
+    </div>
+
+    
+
+{% endblock %}
