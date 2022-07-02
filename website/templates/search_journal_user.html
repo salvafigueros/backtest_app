@@ -1,0 +1,34 @@
+{% extends  "base.html" %}
+{% block title %} DIARIO DE TRADING {% endblock %}
+
+{% block content %}  
+
+<div class="container">
+
+    <h1 class="app-page-title">DIARIO DE TRADING</h1>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="app-card app-card-progress-list h-100 shadow-sm">
+                <div class="app-card-header p-3">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="col-auto">
+                            <h4 class="app-card-title">Usuario: {{user.user_name}}</h4>
+                        </div><!--//col-->
+                        <div class="col-auto">
+                            <div class="card-header-action">
+                                <a class="mx-2" href="{{url_for('views_other.write_journal')}}">Escribir</a>
+                            </div><!--//card-header-actions-->
+                        </div><!--//col-->
+                    </div><!--//row-->
+                </div><!--//app-card-header-->
+                <div class="app-card-body mt-4 mx-4">
+                    {% include 'list_journal.html' %}    
+                </div><!--//app-card-body-->
+            </div><!--//app-card-->
+        </div><!--//col-->
+    </div>
+
+</div>
+
+{% endblock %}

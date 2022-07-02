@@ -3,36 +3,193 @@
 
 {% block content %}  
 
-
-    <div>
-        <p>Página para crear una cartera</p>
-        <div id="">
-            <form method="POST" action="">
-                <fieldset>
-                    <legend>Crear Cartera</legend>
-                    <p>Introduce los siguientes datos para crear una cartera:</p>
-                    <ul>
-                        <li>Nombre: nombre de la cartera</li>
-                        <li>Capital: capital inicial de la cartera</li>
-                        <li>Moneda: moneda en la que va a estar denominada la cartera</li>
-                    </ul>
-                    <p><label>Nombre:</label> <input type="text" name="name" /></p>
-                    <p><label>Capital:</label> <input type="number" name="starting_cash" /></p>
-                    <p><label>Moneda:</label> <input type="text" name="currency" /></p>
-                    <p>Elegir los activos financieros que van a componer la cartera:</p>
-                    <a href="javascript:void(0);" class="add_button" title="Add field">Añadir Activo<img src=""/></a>
-                    <div class="field_wrapper">
-                        <div>
-                            <h3>Activo 1</h3>
-                            <p><label>Ticker:</label> <input type="text" name="asset[]" /></p>
-                            <p><label>Nº de Acciones/Contratos:</label> <input type="number" name="quantity[]" /></p>
-                        </div>
-                    </div>
-                    <button type="submit" name="create_portfolio">Crear Cartera</button>
-                </fieldset>
-            </form>
+    <!-- HIDDEN DYNAMIC ELEMENT TO CLONE -->
+    <!-- you can replace it with any other elements -->
+    <div class="form-group dynamic-element" style="display:none">
+        <div class="row g-3 my-2">
+        
+            <!-- Replace these fields -->
+            <div class="col-md-7">
+                <input type="text" class="form-control" placeholder="Activo" name="asset[]" />
+            </div>
+            <div class="col-md-4">
+                <input type="number" class="form-control" placeholder="Nº Contratos" name="quantity[]" />
+            </div>
+            <!-- End of fields-->
+            <div class="col-md-1">
+                <button class="delete btn btn-danger">X</button>
+            </div>
         </div>
     </div>
+    <!-- END OF HIDDEN ELEMENT -->
+    
+
+    <div class="container mt-5">
+
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-md-6">
+                <div class="card-body p-5">
+                    <form method="POST" id="regForm">
+                        <h1 class="text-center" id="register">Crear Cartera</h1>
+                        <div class="all-steps" id="all-steps"> <span class="step" role="button" onclick="calculateTab(0)"></span> <span class="step" role="button" onclick="calculateTab(1)"></span> </div>
+                        <div class="tab">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nombre Cartera</label>
+                                <input type="text" class="form-control" name="name" id="name" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="starting_cash" class="form-label">Capital</label>
+                                <input type="number" class="form-control" name="starting_cash" id="starting_cash" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="currency" class="form-label">Moneda</label>
+                                <select name="currency" id="currency" class="form-select">
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="CHF">CHF</option>
+                                    <option value="JPY">JPY</option>
+                                    <option value="AUD">AUD</option>
+                                </select>
+                            </div>
+    
+                        </div>
+                        <div class="tab">
+                            <p>Elegir los activos financieros que van a componer la cartera:</p>
+                            <div class="dynamic-stuff">
+                                <!-- Dynamic element will be cloned here -->
+                                <!-- You can call clone function once if you want it to show it a first element-->
+                            </div>
+
+                            <!-- Button -->
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-12 text-center">
+                                        <p class="add-one text-success" role="button">+ Añadir Activo</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div style="overflow:auto;" id="nextprevious">
+                            <div style="float:right;"> <button class="btn btn-primary btn-lg btn-block my-2" type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button> <button class="btn btn-primary btn-lg btn-block my-2" type="button" id="nextBtn" onclick="nextPrev(1)">Next</button> </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        /*
+        $(document).ready(function(){
+            var maxField = 10; //Input fields increment limitation
+            var addButton = $('.add_button'); //Add button selector
+            var wrapper = $('.field_wrapper'); //Input field wrapper
+            var fieldHTML = '<div><h3>Activo 1</h3><p><label>Ticker:</label> <input type="text" name="asset[]" /></p><p><label>Nº de Acciones/Contratos:</label> <input type="number" name="quantity[]" /></p><a href="javascript:void(0);" class="remove_button" title="Remove field">Eliminar Activo<img src=""/></a></div>'; //New input field html 
+            var x = 1; //Initial field counter is 1
+            $(addButton).click(function(){ //Once add button is clicked
+                if(x < maxField){ //Check maximum number of input fields
+                    x++; //Increment field counter
+                    $(wrapper).append(fieldHTML); // Add field html
+                }
+            });
+            $(wrapper).on('click', '.remove_button', function(e){ //Once remove button is clicked
+                e.preventDefault();
+                $(this).parent('div').remove(); //Remove field html
+                x--; //Decrement field counter
+            });
+        }); 
+
+        */
+
+        //your javascript goes here
+        var currentTab = 0;
+        document.addEventListener("DOMContentLoaded", function(event) {
+
+
+            showTab(currentTab);
+
+        });
+
+        function showTab(n) {
+            var x = document.getElementsByClassName("tab");
+            x[n].style.display = "block";
+            if (n == 0) {
+                document.getElementById("prevBtn").style.display = "none";
+            } else {
+                document.getElementById("prevBtn").style.display = "inline";
+            }
+            if (n == (x.length - 1)) {
+                $("#nextBtn").replaceWith("<button class='btn btn-primary btn-lg btn-block' type='submit' name='create_portfolio' id='nextBtn'>Crear Cartera</button>")
+                //document.getElementById("nextBtn").innerHTML = "Crear Cartera";
+            } else {
+                $("#nextBtn").replaceWith("<button class='btn btn-primary btn-lg btn-block' type='button' id='nextBtn' onclick='nextPrev(1)''>Next</button>")
+                //document.getElementById("nextBtn").innerHTML = "Next";
+            }
+            fixStepIndicator(n)
+        }
+
+        function nextPrev(n) {
+            var x = document.getElementsByClassName("tab");
+            if (n == 1 && !validateForm()) return false;
+            x[currentTab].style.display = "none";
+            currentTab = currentTab + n;
+            if (currentTab >= x.length) {
+                // document.getElementById("regForm").submit();
+                // return false;
+                //alert("sdf");
+                document.getElementById("nextprevious").style.display = "none";
+                document.getElementById("all-steps").style.display = "none";
+                document.getElementById("register").style.display = "none";
+                //document.getElementById("text-message").style.display = "block";
+            }
+            showTab(currentTab);
+        }
+
+        function calculateTab(n) {
+            var x = document.getElementsByClassName("tab");
+            if (n > currentTab && !validateForm()) return false;
+            x[currentTab].style.display = "none";
+            currentTab = n;
+            if (currentTab >= x.length) {
+                // document.getElementById("regForm").submit();
+                // return false;
+                //alert("sdf");
+                document.getElementById("nextprevious").style.display = "none";
+                document.getElementById("all-steps").style.display = "none";
+                document.getElementById("register").style.display = "none";
+                document.getElementById("text-message").style.display = "block";
+            }
+            showTab(currentTab);
+        }
+
+        function validateForm() {
+            var x, y, i, valid = true;
+            x = document.getElementsByClassName("tab");
+            y = x[currentTab].getElementsByTagName("input");
+            for (i = 0; i < y.length; i++) { if (y[i].value=="" ) { y[i].className +=" invalid" ; valid=false; } } if (valid) { document.getElementsByClassName("step")[currentTab].className +=" finish" ; } return valid; } function fixStepIndicator(n) { var i, x=document.getElementsByClassName("step"); for (i=0; i < x.length; i++) { x[i].className=x[i].className.replace(" active", "" ); } x[n].className +=" active" ; }
+
+
+        //Clone the hidden element and shows it
+        $('.add-one').click(function(){
+            $('.dynamic-element').first().clone().appendTo('.dynamic-stuff').show();
+            attach_delete();
+        });
+
+
+        //Attach functionality to delete buttons
+        function attach_delete(){
+        $('.delete').off();
+            $('.delete').click(function(){
+                console.log("click");
+                $(this).closest('.form-group').remove();
+            });
+        }
+    </script>
 
     
 

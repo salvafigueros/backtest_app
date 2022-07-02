@@ -3,29 +3,159 @@
 
 {% block content %}  
 
+    <div class="container">
 
-    <div>
-        <div id="">
-            <h3>Optimización de Carteras</h3>
-            <div id="ticker_list">
-                <p><label>Lista de Activos:</label> 
-                {% for ticker in ticker_list  %}
-                    {{ ticker }}, 
-                {% endfor %} 
-                </p>
-            </div>
-            <p>Máximo Rendimiento: {{return_user}}</p>
-            <p>Riesgo: {{std_user}}</p>
-            <p>Pesos: {{weight}}</p>
-            <p>Capital en cada Activo </p>
-            {% for w in weight %}
-                <p> {{ w*starting_capital }} </p>
-            {% endfor %}
+        <h1 class="app-page-title">OPTIMIZACIÓN DE CARTERAS</h1>
 
-            <p>Frontera Eficiente</p>
-            <img src={{url}} alt="Efficient Frontier">
-        </div>
+        <div class="app-card alert alert-success alert-dismissible shadow-sm mb-4 border-left-decoration" role="alert">
+            <div class="inner">
+                <div class="app-card-body p-3 p-lg-4">
+                    <h3 class="mb-3">Optimización Exitosa!</h3>
+                    <div class="row gx-5 gy-3">
+                        <div class="col-12">
+                                <div>
+                                    Se ha efectuado con éxito la optimización de la cartera formada por los siguientes activos: 
+                                    {% for ticker in ticker_list %} 
+                                        {{ticker}}
+                                    {% endfor %}
+                                </div>
+                        </div><!--//col-->
+                    </div><!--//row-->
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div><!--//app-card-body-->
+                
+            </div><!--//inner-->
+        </div><!--//app-card-->
+        
+
+        <!--Key Info-->
+        <div class="row g-4 mb-4">
+
+            <!--Total Return-->
+            <div class="col-6 col-lg-3">
+                <div class="app-card app-card-stat shadow-sm h-100">
+                    <div class="app-card-body p-3 p-lg-4">
+                        <h4 class="stats-type mb-1">Capital</h4>
+                        <div class="stats-figure">{{ starting_capital }}</div>
+                            <div class="stats-meta text-success"> </div>
+                    </div><!--//app-card-body-->
+                    <a class="app-card-link-mask" href="#"></a>
+                </div><!--//app-card-->
+            </div><!--//col-->
+
+            <!--Sharpe Ratio-->
+            <div class="col-6 col-lg-3">
+                <div class="app-card app-card-stat shadow-sm h-100">
+                    <div class="app-card-body p-3 p-lg-4">
+                        <h4 class="stats-type mb-1">Moneda</h4>
+                        <div class="stats-figure">{{ currency }}</div>
+                        <div class="stats-meta"> </div>
+                    </div><!--//app-card-body-->
+                    <a class="app-card-link-mask" href="#"></a>
+                </div><!--//app-card-->
+
+            <!--Max Drawdown-->    
+            </div><!--//col-->
+            <div class="col-6 col-lg-3">
+                <div class="app-card app-card-stat shadow-sm h-100">
+                    <div class="app-card-body p-3 p-lg-4">
+                        <h4 class="stats-type mb-1">Rendimiento</h4>
+                        <div class="stats-figure">{{ "{:.2f}".format(return_user*100|float) }}%</div>
+                        <div class="stats-meta"></div>
+                    </div><!--//app-card-body-->
+                    <a class="app-card-link-mask" href="#"></a>
+                </div><!--//app-card-->
+            </div><!--//col-->
+
+            <!--Drawdown Duration-->
+            <div class="col-6 col-lg-3">
+                <div class="app-card app-card-stat shadow-sm h-100">
+                    <div class="app-card-body p-3 p-lg-4">
+                        <h4 class="stats-type mb-1">Riesgo</h4>
+                        <div class="stats-figure">{{ "{:.2f}".format(std_user*100|float) }}%</div>
+                        <div class="stats-meta"></div>
+                    </div><!--//app-card-body-->
+                    <a class="app-card-link-mask" href="#"></a>
+                </div><!--//app-card-->
+            </div><!--//col-->
+
+        </div><!--//row-->
+
+        <!--Gráficos-->
+        <div class="row g-4 mb-4">
+
+            <!--Efficient Frontier-->
+            <div class="col-12 col-lg-6">
+                <div class="app-card app-card-chart h-100 shadow-sm">
+                    <div class="app-card-header p-3">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-auto">
+                                <h4 class="app-card-title">Frontera Eficiente</h4>
+                            </div><!--//col-->
+                        </div><!--//row-->
+                    </div><!--//app-card-header-->
+                    <div class="app-card-body p-3 p-lg-4">
+                        <div class="chart-container">   
+                            <img src='data:image/png;base64,{{efficient_frontier}}' class="img-fluid"/>
+                        </div>
+                    </div><!--//app-card-body-->
+                </div><!--//app-card-->
+            </div><!--//col-->
+
+            <!--Distribución Activos Pie Chart-->
+            <div class="col-12 col-lg-6">
+                <div class="app-card app-card-chart h-100 shadow-sm">
+                    <div class="app-card-header p-3">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-auto">
+                                <h4 class="app-card-title">Distribución Activos</h4>
+                            </div><!--//col-->
+                        </div><!--//row-->
+                    </div><!--//app-card-header-->
+                    <div class="app-card-body p-3 p-lg-4">
+                        <div class="chart-container">
+                            <canvas id="assets-distribution" ></canvas>
+                        </div>
+                    </div><!--//app-card-body-->
+                </div><!--//app-card-->
+            </div><!--//col-->
+        </div><!--//row-->
+
     </div>
+                        
+    
+    <script>
+        const data = {
+            labels: [{% for ticker in ticker_list%}"{{ ticker|safe }}",{% endfor %}],
+            datasets: [{
+                label: 'My First Dataset',
+                data: [{% for w in weight%}{{ "{:.2f}".format(w*100|float)|safe }},{% endfor %}],
+                backgroundColor:[{% for color in color_list%}"{{ color|safe }}",{% endfor %}],
+                hoverOffset: 4
+            }]
+        };
+
+        // get chart canvas
+        var ctx = document.getElementById("assets-distribution").getContext("2d");
+        
+        // create the chart using the chart canvas
+        var myChart = new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutoutPercentage: 0,
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                        return data['labels'][tooltipItem['index']] + ': ' + data['datasets'][0]['data'][tooltipItem['index']] + '%';
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 
     
 

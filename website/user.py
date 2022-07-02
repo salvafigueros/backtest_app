@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 class User:
 
-    def __init__(self, user_name, user_full_name, password, user_role):
+    def __init__(self, user_name=None, user_full_name=None, password=None, user_role=None):
         self.user_name = user_name
         self.user_full_name = user_full_name
         self.password = password
@@ -15,6 +15,20 @@ class User:
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
         conn_cursor.execute("INSERT INTO users(user_name, user_full_name, password, role) VALUES(%s, %s, %s, %s)", (user.user_name, user.user_full_name, user.password, user.user_role))
+        user.id = conn_cursor.lastrowid
+        conn_bd.commit()
+
+        conn_cursor.close()
+        conn_bd.close()
+
+        return user
+
+    @staticmethod
+    def insert_unregistered_user(user):
+        print(user.user_name)
+        conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
+        conn_cursor = conn_bd.cursor()
+        conn_cursor.execute("INSERT INTO users(user_name) VALUES(%s)", (str(user.user_name),))
         user.id = conn_cursor.lastrowid
         conn_bd.commit()
 
@@ -58,6 +72,12 @@ class User:
         user = User(user_name, user_full_name, User.hash_password(password), user_role)
 
         return User.save_user(user)
+
+    @staticmethod
+    def create_unregistered_user(user_name_id):
+        user = User(user_name = user_name_id)
+
+        return User.insert_unregistered_user(user)
 
     @staticmethod
     def login_user(user_name, password):

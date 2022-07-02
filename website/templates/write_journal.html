@@ -1,0 +1,39 @@
+{% extends  "base.html" %}
+{% block title %} DIARIO DE TRADING {% endblock %}
+
+{% block content %}  
+
+<div class="container">
+
+    <div class="row d-flex justify-content-center align-items-center">
+        <div class="col-md-6">
+            <div class="card-body p-5">
+                <form method="POST" id="">
+                    {{ form.csrf_token }}
+                    {{form.user_id(value = session["user_id"])}}
+                    <h1 class="text-center" id="">Diario de Trading</h1>
+                    <div class="my-4">
+                        <div class="mb-3">
+                            {{ form.date.label(for="date", class="form-label")}} 
+                            {{ form.date(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.journal_text.label(for="journal_text", class="form-label") }}
+                            {{ form.journal_text(class='form-control', style='height: auto;', rows='10') }}
+                        </div>
+
+                    </div>
+
+                    <div style="overflow:auto;" id="nextprevious">
+                        <div style="float:right;"> <button class="btn btn-primary btn-lg btn-block my-2" type="submit" id="submit_write_journal" >Añadir</button> </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+    
+
+{% endblock %}

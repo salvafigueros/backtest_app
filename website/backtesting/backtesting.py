@@ -1,33 +1,43 @@
 import queue 
 from .backtesting_assets import Backtesting_Assets
 from .data.historicDBDataHandler import HistoricDBDataHandler
-from .conservativePortfolio import ConservativePortfolio
+from .portfolioBacktesting import PortfolioBacktesting
 from .simulatedExecutionHandler import SimulatedExecutionHandler
 from .strategy.buyMaxStrategy import BuyMaxStrategy
 from .strategy.buyMinStrategy import BuyMinStrategy
 from .strategy.shortMaxStrategy import ShortMaxStrategy
 from .strategy.shortMinStrategy import ShortMinStrategy
+from .strategy.buyAndHoldStrategy import BuyAndHoldStrategy
 from .strategy.strategy import Strategy
+from .strategy.strategy_factory import StrategyFactory
+from .strategy.buyMaxStrategy_builder import BuyMaxStrategyBuilder
+from .strategy.strategyType import StrategyType
+from ..utils import get_strategy_conf_by_strategy_type_id
 
 import mysql.connector
+import pandas as pd
 
 class Backtesting():
 
 
-    def __init__(self, backtesting_id=None, user_id=None, strategy_id=None, starting_cash=None, currency=None, shared=False):
+    def __init__(self, backtesting_id=None, user_id=None, name=None, strategy_id=None, starting_cash=None, currency=None, start_dt=None, end_dt=None, shared=False, saved=False, date=None):
         self.id = backtesting_id
         self.user_id = user_id 
+        self.name = name
         self.strategy_id = strategy_id
         self.starting_cash = starting_cash
         self.currency = currency
-        self.saved = False
+        self.start_dt = start_dt
+        self.end_dt = end_dt
+        self.saved = saved
         self.shared = shared
+        self.date = date
 
     @staticmethod
     def insert(backtesting):
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
-        conn_cursor.execute("INSERT INTO backtesting(user_id, strategy_id, starting_cash, currency, shared) VALUES(%s, %s, %s, %s, %s)", (backtesting.user_id, backtesting.strategy_id, backtesting.starting_cash, backtesting.currency, backtesting.shared))
+        conn_cursor.execute("INSERT INTO backtesting(user_id, name, strategy_id, starting_cash, currency, start_dt, end_dt, shared, saved) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)", (backtesting.user_id, backtesting.name, backtesting.strategy_id, backtesting.starting_cash, backtesting.currency, backtesting.start_dt, backtesting.end_dt, backtesting.shared, backtesting.saved))
         backtesting.id = conn_cursor.lastrowid
         conn_bd.commit()
 
@@ -40,7 +50,7 @@ class Backtesting():
     def update(backtesting):
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
-        conn_cursor.execute("UPDATE backtesting B SET user_id = %s, strategy_id=%s, starting_cash=%s, currency=%s, shared=%s WHERE B.id=%s", (backtesting.user_id, backtesting.strategy_id, backtesting.starting_cash, backtesting.currency, backtesting.shared, backtesting.id))
+        conn_cursor.execute("UPDATE backtesting B SET user_id = %s, name=%s, strategy_id=%s, starting_cash=%s, currency=%s, start_dt=%s, end_dt=%s, shared=%s, saved=%s WHERE B.id=%s", (backtesting.user_id, backtesting.name, backtesting.strategy_id, backtesting.starting_cash, backtesting.currency, backtesting.start_dt, backtesting.end_dt, backtesting.shared, backtesting.saved, backtesting.id))
         conn_bd.commit()
 
         conn_cursor.close()
@@ -67,21 +77,32 @@ class Backtesting():
         return Backtesting.insert(backtesting)
 
     @staticmethod
-    def save_backtesting_in_bd(user_id, starting_cash, currency, ticker_list, strategy_name, time_frame, exit_trade, exit_configuration):
-        strategy = Strategy.create_strategy(strategy_name, time_frame, exit_trade, exit_configuration)
-        backtesting = Backtesting.create_backtesting_from_user(user_id, strategy.id, starting_cash, currency, ticker_list, strategy.strategy, time_frame, exit_trade, exit_configuration)
-        backtesting = Backtesting.save_backtesting(backtesting)
+    def create_backtesting(user_id, name, strategy_id, starting_cash, currency, start_dt, end_dt, shared=False, saved=False):
+        backtesting = Backtesting(user_id=user_id, name=name, strategy_id=strategy_id, starting_cash=starting_cash, currency=currency, start_dt=start_dt, end_dt=end_dt, shared=shared, saved=saved)
+
+        return Backtesting.save_backtesting(backtesting)
+
+    def set_strategy(self, strategy_factory):
+        strategy_conf = get_strategy_conf_by_strategy_type_id(self.strategy_id)
+
+        if hasattr(self, "strategy_type"):
+            self.strategy = strategy_factory.get(self.strategy_type.strategy_type, **strategy_conf)
+        elif hasattr(self, "strategy_id"):
+            self.strategy_type = StrategyType.get_strategy_type_by_id(self.strategy_id)
+            self.strategy = strategy_factory.get(self.strategy_type.strategy_type, **strategy_conf)
+
+        return
+
+
+
+    @staticmethod
+    def create_backtesting_from_user(user_id, name, starting_cash, currency, start_dt, end_dt, ticker_list, strategy_type):
+        backtesting = Backtesting.create_backtesting(user_id, name, strategy_type.id, starting_cash, currency, start_dt, end_dt)
         backtesting.saved = True
         backtesting.backtesting_assets = Backtesting_Assets.create_backtesting_assets(backtesting.id, ticker_list)
 
         return backtesting
-        
-
-    @staticmethod
-    def create_backtesting(user_id, strategy_id, starting_cash, currency, shared):
-        backtesting = Backtesting(user_id=user_id, strategy_id=strategy_id, starting_cash=starting_cash, currency=currency, shared=shared)
-
-        return Backtesting.save_backtesting(backtesting)
+     
 
     @staticmethod
     def get_backtesting_by_id(backtesting_id):
@@ -92,10 +113,17 @@ class Backtesting():
 
         if conn_cursor.rowcount == 1:
             row = conn_cursor.fetchone()
-            backtesting = Backtesting(user_id=row[1], strategy_id=row[2], starting_cash=row[3], currency=row[4], shared=row[5])
+            backtesting = Backtesting(user_id=row[1], 
+                                      name=row[2], 
+                                      strategy_id=row[3], 
+                                      starting_cash=row[4], 
+                                      currency=row[5], 
+                                      start_dt=row[6], 
+                                      end_dt=row[7], 
+                                      shared=row[8], 
+                                      saved=row[9])
             backtesting.id = row[0]
-            backtesting.saved = True
-
+            
             conn_cursor.close()
             conn_bd.close()
             return backtesting
@@ -161,74 +189,54 @@ class Backtesting():
 
         return False
 
-    @staticmethod 
-    def create_backtesting_from_user(user_id, strategy_id, starting_cash, currency, ticker_list, strategy, time_frame, exit_trade, exit_configuration):
-        backtesting = Backtesting(user_id=user_id, strategy_id=strategy_id, starting_cash=starting_cash, currency=currency)
-        backtesting.backtesting_assets = Backtesting_Assets(ticker_list=ticker_list)
-        backtesting.events = queue.Queue()
-        backtesting.bars = HistoricDBDataHandler(backtesting.events, backtesting.backtesting_assets.ticker_list)
-        backtesting.port = ConservativePortfolio(backtesting.bars, backtesting.events, backtesting.bars.get_start_date(), backtesting.starting_cash)
-        backtesting.simulator = SimulatedExecutionHandler(backtesting.events)
-
-        if strategy == "buymax":
-            backtesting.strategy = BuyMaxStrategy(backtesting.bars, backtesting.events, time_frame, exit_trade, exit_configuration)
-        elif strategy == "shortmax":
-            backtesting.strategy = ShortMaxStrategy(backtesting.bars, backtesting.events, time_frame, exit_trade, exit_configuration)
-        elif strategy == "buymin":
-            backtesting.strategy = BuyMinStrategy(backtesting.bars, backtesting.events, time_frame, exit_trade, exit_configuration)
-        elif strategy == "shortmin":
-            backtesting.strategy = ShortMinStrategy(backtesting.bars, backtesting.events, time_frame, exit_trade, exit_configuration)
-
-        return backtesting
-
     @staticmethod
     def create_backtesting_from_db(backtesting_id):
+        #Create Backtesting
         backtesting = Backtesting.get_backtesting_by_id(backtesting_id)
-        backtesting.backtesting_assets = Backtesting_Assets.get_backtesting_assets_by_backtesting_id(backtesting.id)
-        backtesting.events = queue.Queue()
-        backtesting.bars = HistoricDBDataHandler(backtesting.events, backtesting.backtesting_assets.ticker_list)
-        backtesting.port = ConservativePortfolio(backtesting.bars, backtesting.events, backtesting.bars.get_start_date(), backtesting.starting_cash)
-        backtesting.simulator = SimulatedExecutionHandler(backtesting.events)
 
-        strategy = Strategy.get_strategy_by_id(backtesting.strategy_id)
-        if strategy.strategy == "buymax":
-            backtesting.strategy = BuyMaxStrategy(backtesting.bars, backtesting.events, strategy.time_frame, strategy.exit_trade, strategy.exit_configuration)
-        elif strategy.strategy == "shortmax":
-            backtesting.strategy = ShortMaxStrategy(backtesting.bars, backtesting.events, strategy.time_frame, strategy.exit_trade, strategy.exit_configuration)
-        elif strategy.strategy == "buymin":
-            backtesting.strategy = BuyMinStrategy(backtesting.bars, backtesting.events, strategy.time_frame, strategy.exit_trade, strategy.exit_configuration)
-        elif strategy.strategy == "shortmin":
-            backtesting.strategy = ShortMinStrategy(backtesting.bars, backtesting.events, strategy.time_frame, strategy.exit_trade, strategy.exit_configuration)
+        #Set BacktestingAssets
+        backtesting.backtesting_assets = Backtesting_Assets.get_backtesting_assets_by_backtesting_id(backtesting.id)
+
+        #Set StrategyType
+        backtesting.strategy_type = StrategyType.get_strategy_type_by_id(backtesting.strategy_id)
 
         return backtesting
     
     def execute_backtesting(self):
+        #Prepare Backtesting
+        self.events = queue.Queue()
+        self.bars = HistoricDBDataHandler(self.events, self.backtesting_assets.ticker_list, self.start_dt, self.end_dt)
+        self.port = PortfolioBacktesting(self.bars, self.events, self.bars.get_start_date(), self.starting_cash, self.currency)
+        self.simulator = SimulatedExecutionHandler(self.events)
+        self.strategy.events=self.events
+        self.strategy.set_bars(self.bars, self.backtesting_assets.ticker_list)
 
+        #Run Backtesting
         while True:
-                if self.bars.continue_backtest == True:
-                    self.bars.update_bars()
-                else: 
+            if self.bars.continue_backtest == True:
+                self.bars.update_bars()
+            else: 
+                break
+
+            while True:
+                try:
+                    event = self.events.get(False)
+                except queue.Empty:
                     break
+                else:
+                    if event is not None:
+                        if event.type == 'MARKET':
+                            self.strategy.calculate_signals(event)
+                            self.port.update_timeindex(event)
 
-                while True:
-                    try:
-                        event = self.events.get(False)
-                    except queue.Empty:
-                        break
-                    else:
-                        if event is not None:
-                            if event.type == 'MARKET':
-                                self.strategy.calculate_signals(event)
-                                self.port.update_timeindex(event)
+                        elif event.type == 'SIGNAL':
+                            self.port.update_signal(event)
 
-                            elif event.type == 'SIGNAL':
-                                self.port.update_signal(event)
+                        elif event.type == 'ORDER':
+                            self.simulator.execute_order(event)
 
-                            elif event.type == 'ORDER':
-                                self.simulator.execute_order(event)
-
-                            elif event.type == 'FILL':
-                                self.port.update_fill(event)
+                        elif event.type == 'FILL':
+                            self.port.update_fill(event)
 
                             
     def output_results_backtesting(self):
@@ -238,15 +246,58 @@ class Backtesting():
     def plot_equity_curve(self):
         return self.port.plot_equity_curve()
 
+    @property
+    def equity_curve(self):
+        equity_curve = self.port.equity_curve
+        equity_curve = equity_curve["equity_curve"]
+        
+        equity_curve.drop(index=equity_curve.index[0], 
+                axis=0, 
+                inplace=True)
+
+        equity_curve.drop(equity_curve.tail(1).index,inplace=True) # drop last row
 
 
-    def info_backtesting(self):
-        info_backtesting = {
-            "user_name": User.get_user_by_id(self.user_id).user_name,
-            "ticker_list": self.backtesting_assets.ticker_list,
-            "strategy": "hola",
-            "exit_trade": "hola",
-            "exit_configuration": "hola"
-        }
+        return pd.DataFrame(equity_curve)
 
-        return info_backtesting
+
+
+    
+    def benchmark_backtesting(self):
+        #Prepare Backtesting
+        events = queue.Queue()
+        bars = HistoricDBDataHandler(events, self.backtesting_assets.ticker_list, self.start_dt, self.end_dt)
+        port = PortfolioBacktesting(bars, events, bars.get_start_date(), self.starting_cash, self.currency)
+        simulator = SimulatedExecutionHandler(events)
+        strategy = BuyAndHoldStrategy(bars, events)
+
+        #Run Backtesting
+        while True:
+            if bars.continue_backtest == True:
+                bars.update_bars()
+            else: 
+                break
+
+            while True:
+                try:
+                    event = events.get(False)
+                except queue.Empty:
+                    break
+                else:
+                    if event is not None:
+                        if event.type == 'MARKET':
+                            strategy.calculate_signals(event)
+                            port.update_timeindex(event)
+
+                        elif event.type == 'SIGNAL':
+                            port.update_signal(event)
+
+                        elif event.type == 'ORDER':
+                            simulator.execute_order(event)
+
+                        elif event.type == 'FILL':
+                            port.update_fill(event)
+        
+
+        port.create_equity_curve_dataframe()
+        return port.output_summary_stats()

@@ -1,0 +1,41 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+
+    <div class="container mt-5">
+
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-md-6">
+                <div class="card-body p-5">
+                    <form method="POST" id="">
+                        {{ form.csrf_token }}
+                        <h1 class="text-center" id="">Backtesting Manual</h1>
+                        <div class="my-4">
+                            <div class="mb-3">
+                                {{ form.starting_cash.label(for="starting_cash", class="form-label")}} 
+                                {{ form.starting_cash(class="form-control") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.currency.label(for="currency", class="form-label") }}
+                                {{ form.currency(class="form-select") }}
+                            </div>
+    
+                        </div>
+
+                        <div style="overflow:auto;" id="nextprevious">
+                            <div style="float:right;"> <button class="btn btn-primary btn-lg btn-block my-2" type="submit" id="backtesting_manual" >Crear Cartera</button> </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    
+    
+{% endblock %}
+

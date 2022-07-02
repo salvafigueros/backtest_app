@@ -3,45 +3,127 @@
 
 {% block content %}  
 
+    <div class="container">
+                    
+        <h1 class="app-page-title">BACKTESTING</h1>
+        
+        <div class="app-card alert alert-dismissible shadow-sm mb-4 border-left-decoration" role="alert">
+            <div class="inner">
+                <div class="app-card-body p-3 p-lg-4">
+                    <h3 class="mb-3">{{backtesting.name}}</h3>
+                    <h5 class="mb-3">{{user.user_name}}</h5>
+                    <div class="row gx-5 gy-3">
+                        <div class="col-12">
+                            
+                            <!-- Information Backtesting -->
+                            <div>
+                                <ul class="list-group list-group-flush">
+                                    <ul class="list-group-item widget-49-meeting-points" style="list-style-type:none;">
+                                        <li class="widget-49-meeting-item"><span>Capital: {{ backtesting.starting_cash }} </span></li>
+                                        <li class="widget-49-meeting-item"><span>Fecha de Inicio: {{ backtesting.start_dt.strftime("%d/%m/%Y") }} </span></li>
+                                        <li class="widget-49-meeting-item"><span>Fecha de Fin: {{ backtesting.end_dt.strftime("%d/%m/%Y") }} </span></li>
+                                        <li class="widget-49-meeting-item"><span>Moneda: {{ backtesting.currency }} </span></li>
+                                        <li class="widget-49-meeting-item">
+                                            <span>Activos:
+                                                {% for ticker in backtesting.backtesting_assets.ticker_list %}    
+                                                    {{ ticker }} 
+                                                {% endfor %}
+                                            </span>
+                                        </li>
+                                    </ul>
+                                    {{backtesting.strategy.to_html() | safe}}
+                                </ul>
+                            </div>
+                        </div><!--//col-->
 
-    <div>
-        <div id="">
-            <h3>Backtesting {{backtesting.id}} de {{user.user_name}}</h3>
-                {% if 'user_name' in session and session['user_id'] == user.id %}
-                    {% if backtesting.shared == False %}
-                        <button class="share_backtesting" type="button" onClick="shareBacktesting({{ backtesting.id }})"> Compartir</button> 
-                    {% else %} 
-                        <p> Has compartido este backtesting </p>
-                    {% endif %}
-                    <form method="POST" action="/backtesting/delete">
-                        {{ form.csrf_token }}
-                        {{form.backtesting_id(value=backtesting.id)}}
-                        <button type="submit" name="delete_backtesting">Eliminar</button> 
-                    </form>
-                {% endif %}
+                        <!-- Buttons Share & Delete -->
+                        {% if 'user_name' in session and session['user_id'] == user.id %}
+                            <div class="row gx-5 gy-3">
+                                    {% if backtesting.saved == True %}
+                                        {% if backtesting.shared == False %} 
+                                            <div class="col-auto">
+                                                <!-- Button Share -->
+                                                <button class="share_backtesting btn app-btn-primary" type="button" onClick="shareBacktesting({{ backtesting.id }})"> 
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share me-2" viewBox="0 0 16 16">
+                                                        <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+                                                    </svg>Compartir</button>
+                                            </div>
+                                        {% endif %}
+                                        <div class="col-auto">
+                                            <!-- Button Delete -->
+                                            <form method="POST" action="/backtesting/delete">
+                                                {{ form.csrf_token }}
+                                                {{form.backtesting_id(value=backtesting.id)}}
+                                                <button class="btn app-btn-primary" type="submit" name="finish_portfolio" onclick="return confirm_finish_portfolio()">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash me-2" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                                    </svg>Eliminar</button>
+                                            </form>
+                                        </div>
+                                        
+                                    {% else %} 
+                                        <!-- Button Save -->
+                                        <div class="col-auto">
+                                            <button class="save_backtesting btn app-btn-primary" type="button" onClick="saveBacktesting({{ backtesting.id }})"> 
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save me-2" viewBox="0 0 16 16">
+                                                    <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
+                                                    </svg>Guardar</button>
+                                        </div>
+                                    {% endif %}
+                                    
+                            </div>
+                        {% endif  %}
 
+                    </div><!--//row-->
 
-            <form method="POST" action="/backtesting/view">
-                {{ form.csrf_token }}
+                </div><!--//app-card-body-->
+                
+            </div><!--//inner-->
+        </div><!--//app-card-->
 
-                {{form.backtesting_id(value=backtesting.id)}}
-                <div id="ticker_list">
-                    <p><label>Lista de Activos:</label> 
-                    {% for ticker in backtesting.backtesting_assets.ticker_list  %}
-                        {{ ticker }}, 
-                    {% endfor %} 
-                    </p>
+        
+        <!--Run/Execute Button-->
+        <form method="POST" action="/backtesting/view" class="execute-form">
+            {{ form.csrf_token }}
+            {{form.backtesting_id(value=backtesting.id)}}
+
+            <div class="row g-4 mb-4">
+                <div class="d-grid gap-2 col-6 mx-auto">
+                    <button class="btn btn-success btn-lg" type="submit" name="run_backtesting">Ejecutar Backtesting</button>
                 </div>
+            </div>
 
-                <p><label>Estrategia: </label> {{ backtesting.strategy.get_name() }}</p>
-                <p><label>Marco Temporal: </label> {{ backtesting.strategy.time_frame }} días</p> 
-                <p><label>Tipo de Salida: </label> {{ backtesting.strategy.exit_trade }}</p> 
-                <p><label>Configuración Salida: </label> {{ backtesting.strategy.exit_configuration }}</p> 
-                <button type="submit" name="run_backtesting">Ejecutar Backtesting</button>
-            </form>
-        </div>
+        </form>
+
     </div>
 
+    <div id="loader"></div>
+
+    <style type="text/css">
+        #loader {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100%;
+          background: rgba(0,0,0,0.75) url(/static/images/loading8.gif) no-repeat center center;
+          z-index: 10000;
+        }
+    </style>
+
+
+<script>
+    var spinner = $('#loader');
+    $(function() {
+      $('.execute-form').submit(function(e) {
+        //e.preventDefault();
+        spinner.show();
+      });
+    });
+    </script>
     
 
 {% endblock %}

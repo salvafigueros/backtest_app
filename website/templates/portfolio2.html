@@ -1,0 +1,340 @@
+{% extends  "base.html" %}
+{% block title %} Portfolio 2 {% endblock %}
+
+{% block content %} 
+
+    <div class="container">
+            
+        <h1 class="app-page-title">CARTERA</h1>
+        
+        <div class="app-card alert alert-dismissible shadow-sm mb-4 border-left-decoration" role="alert">
+            <div class="inner">
+                <div class="app-card-body p-3 p-lg-4">
+                    <h3 class="mb-3">{{portfolio.name}}</h3>
+                    <h5 class="mb-3">Usuario: {{user.user_name}}</h5>
+                    <div class="row gx-5 gy-3">
+                        <div class="col-12 col-lg-9">
+                            
+                            <div></div>
+                        </div><!--//col-->
+
+                        <!-- Buttons Share & Delete -->
+                        {% if 'user_name' in session and session['user_id'] == user.id %}
+                            <div class="col-12 col-lg-3">
+                                <!-- Button Share -->
+                                {% if portfolio.shared == False %}
+                                    <form action="/share-portfolio" method="POST">
+                                        <input type="hidden" name="portfolio_id" value="{{portfolio.id}}"/>
+                                        <button class="btn app-btn-primary" type="submit" name="share_portfolio" onclick="return confirm_share_portfolio()">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share me-2" viewBox="0 0 16 16">
+                                                <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+                                            </svg>Compartir</button>
+                                    </form>
+                                {% endif %}
+                                <!-- Button Delete -->
+                                <form action="/finish-portfolio" method="POST">
+                                    <input type="hidden" name="portfolio_id" value="{{portfolio.id}}"/>
+                                    <button class="btn app-btn-primary" type="submit" name="finish_portfolio" onclick="return confirm_finish_portfolio()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash me-2" viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                        </svg>Eliminar</button>
+                                </form>
+                            </div>
+                        {% endif  %}
+
+                    </div><!--//row-->
+
+                </div><!--//app-card-body-->
+                
+            </div><!--//inner-->
+        </div><!--//app-card-->
+
+        <!--Key Metrics-->
+
+        <div class="row g-4 mb-4">
+
+            <!--PyG-->
+            <div class="col-6 col-lg-3">
+                <div class="app-card app-card-stat shadow-sm h-100">
+                    <div class="app-card-body p-3 p-lg-4">
+                        <h4 class="stats-type mb-1">PyG</h4>
+                        <div class="stats-figure">{{ "{:.2f}".format(portfolio.total_pnl|float) }}</div>
+                        {% if portfolio.total_pnl > 0 %}
+                            <div class="stats-meta text-success">
+                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-down" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
+        </svg> {{ "{:.2f}".format(((portfolio.total_pnl + portfolio.starting_cash) / portfolio.starting_cash)|float) }}%</div>
+                        {% elif portfolio.total_pnl < 0 %}
+                            <div class="stats-meta text-danger">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-arrow-down" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
+                                </svg>{{ "{:.2f}".format(((portfolio.total_pnl + portfolio.starting_cash) / portfolio.starting_cash)|float) }}%</div>
+                        {% else %}
+                            <div class="stats-meta">0%</div>
+                        {% endif %}
+                        
+                    </div><!--//app-card-body-->
+                    <a class="app-card-link-mask" href="#"></a>
+                </div><!--//app-card-->
+            </div><!--//col-->
+
+            <!--Equity-->
+            <div class="col-6 col-lg-3">
+                <div class="app-card app-card-stat shadow-sm h-100">
+                    <div class="app-card-body p-3 p-lg-4">
+                        <h4 class="stats-type mb-1">Equity</h4>
+                        <div class="stats-figure">{{ "{:.2f}".format(portfolio.total_equity|float) }}</div>
+                        <div class="stats-meta"> {{ portfolio.currency }} </div>
+                    </div><!--//app-card-body-->
+                    <a class="app-card-link-mask" href="#"></a>
+                </div><!--//app-card-->
+
+            <!--Capital-->    
+            </div><!--//col-->
+            <div class="col-6 col-lg-3">
+                <div class="app-card app-card-stat shadow-sm h-100">
+                    <div class="app-card-body p-3 p-lg-4">
+                        <h4 class="stats-type mb-1">Capital</h4>
+                        <div class="stats-figure">{{portfolio.current_cash}}</div>
+                        <div class="stats-meta">
+                            {{portfolio.currency}}</div>
+                    </div><!--//app-card-body-->
+                    <a class="app-card-link-mask" href="#"></a>
+                </div><!--//app-card-->
+            </div><!--//col-->
+
+            <!--Valor de Mercado-->
+            <div class="col-6 col-lg-3">
+                <div class="app-card app-card-stat shadow-sm h-100">
+                    <div class="app-card-body p-3 p-lg-4">
+                        <h4 class="stats-type mb-1">Valor de Mercado</h4>
+                        <div class="stats-figure">{{"{:.2f}".format(portfolio.total_market_value|float)}}</div>
+                        <div class="stats-meta">{{portfolio.currency}}</div>
+                    </div><!--//app-card-body-->
+                    <a class="app-card-link-mask" href="#"></a>
+                </div><!--//app-card-->
+            </div><!--//col-->
+        </div><!--//row-->
+
+        <!--Gráficos-->
+        <div class="row g-4 mb-4">
+
+            <!--Distribución Activos Pie Chart-->
+            <div class="col-12 col-lg-12">
+                <div class="app-card app-card-chart h-100 shadow-sm">
+                    <div class="app-card-header p-3">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-auto">
+                                <h4 class="app-card-title">Distribución Activos</h4>
+                            </div><!--//col-->
+                        </div><!--//row-->
+                    </div><!--//app-card-header-->
+                    <div class="app-card-body p-3 p-lg-4">
+                        <div class="chart-container">
+                            <canvas id="assets-distribution" ></canvas>
+                        </div>
+                    </div><!--//app-card-body-->
+                </div><!--//app-card-->
+            </div><!--//col-->
+        </div><!--//row-->
+
+        {% if 'user_name' in session and session['user_id'] == user.id %}
+
+            <div class="row g-4 mb-4">
+                <form action="/modify-portfolio" method="POST">
+                    <div class="container">
+                        <div class="row justify-content-center g-3">
+                            <input type="hidden" name="portfolio_id" value="{{portfolio.id}}"/>
+                            <div class="col-10 col-md-auto">
+                                <input type="text" class="form-control" placeholder="Ticker" name="asset"/>
+                            </div>
+                            <div class="col-auto">
+                                <select class="form-select" name="direction">
+                                    <option value="1">Buy</option>
+                                    <option value="-1">Sell</option>                                               
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <input type="number" class="form-control" placeholder="Nº" name="quantity"/>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn" name="modify_position" onclick="return confirm_modify_position()">Enviar</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        {% endif %}
+
+
+        
+        <!--Posiciones-->
+        <div class="row g-4 mb-4">
+            {% for asset,position in portfolio.portfolio_to_dict().items() %}
+                <div class="col-12 col-lg-4">
+                    <div class="app-card app-card-basic d-flex flex-column align-items-start shadow-sm">
+                        <div class="app-card-header p-3 border-bottom-0">
+                            <div class="row align-items-center gx-3">
+                                <div class="col-auto">
+                                    <div class="app-icon-holder">
+                                        {{asset}}
+                                    </div><!--//icon-holder-->
+                                    
+                                </div><!--//col-->
+                                <div class="col-auto">
+                                    <h4 class="app-card-title">{{ asset }}</h4>
+                                </div><!--//col-->
+                            </div><!--//row-->
+                        </div><!--//app-card-header-->
+                        <div class="app-card-body px-4">
+                            
+                            <div class="intro">
+                                <ul class="list-group list-group-flush">
+                                    <ul class="list-group-item widget-49-meeting-points" style="list-style-type:none;">
+                                        <li class="widget-49-meeting-item"><span>Cantidad: {{ position["quantity"] }} </span></li>
+                                        <li class="widget-49-meeting-item"><span>Valor de Mercado: {{ "{:.2f}".format(position["market_value"]|float)  }} </span></li>
+                                        <li class="widget-49-meeting-item"><span>PyG No Realizado: {{  "{:.2f}".format(position["unrealised_pnl"]|float) }} </span></li>
+                                        <li class="widget-49-meeting-item"><span>PyG Realizado: {{ "{:.2f}".format(position["realised_pnl"]|float) }} </span></li>
+                                        <li class="widget-49-meeting-item"><span>PyG Total: {{ "{:.2f}".format(position["total_pnl"]|float) }} </span></li>
+                                    </ul>
+                                </ul>
+                            </div>
+
+                        </div><!--//app-card-body-->
+                        <div class="app-card-footer p-4 mt-auto">
+                            {% if 'user_name' in session and session['user_id'] == user.id %}
+                            <form action="/modify-portfolio" method="POST">
+                                <div class="row align-items-center my-2 gx-1">
+                                    
+                                        <input type="hidden" name="position_id" value="{{position['position_id']}}"/>
+                                        <input type="hidden" name="portfolio_id" value="{{portfolio.id}}"/>
+                                        <input type="hidden" name="asset" value="{{asset}}"/>
+                                        <div class="col-5">
+
+                                            <select class="form-select" name="direction">
+                                                <option value="1">Buy</option>
+                                                <option value="-1">Sell</option>                                               
+                                            </select>  
+                      
+                                        </div>
+                                        <div class="col-4">
+
+                                            <input type="number" class="form-control" placeholder="Nº" name="quantity" aria-label="Contratos">
+
+                                        </div>
+                                        <div class="col-3">
+
+                                            <button class="btn app-btn-secondary" type="submit" name="modify_position">Enviar</button>
+
+                                        </div>
+                                </div>
+                            </form>
+
+                            {% endif %}
+                        </div><!--//app-card-footer-->
+                    </div><!--//app-card-->
+                </div><!--//col-->
+            {% endfor %}
+        </div>
+
+
+        <!--Órdenes-->
+        <div class="row g-4 mb-4">
+            <div class="tab-content" id="orders-table-tab-content">
+                <div class="tab-pane fade show active" id="orders-all" role="tabpanel" aria-labelledby="orders-all-tab">
+                    <div class="app-card app-card-orders-table shadow-sm mb-5">
+                        <div class="app-card-body">
+                            <div class="table-responsive">
+                                <table class="table app-table-hover mb-0 text-left">
+                                    <thead>
+                                        <tr>
+                                            <th class="cell">Código</th>
+                                            <th class="cell">Activo</th>
+                                            <th class="cell">Cantidad</th>
+                                            <th class="cell">Precio</th>
+                                            <th class="cell">Comisión</th>
+                                            <th class="cell">Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for transaction in portfolio.get_list_transactions() %}
+                                            <tr>
+                                                <td class="cell">#{{transaction.id}}</td>
+                                                <td class="cell">{{transaction.asset}}</td>
+                                                <td class="cell">{{transaction.quantity}}</td>
+                                                <td class="cell">{{transaction.price}}</td>
+                                                <td class="cell">{{transaction.commission}}</td>
+                                                <td class="cell">{{transaction.dt}}</td>
+
+                                            </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div><!--//table-responsive-->
+                           
+                        </div><!--//app-card-body-->		
+                    </div><!--//app-card-->
+                    
+                </div><!--//tab-pane-->
+                
+            </div><!--//tab-content-->
+
+        </div>
+    </div>
+
+
+<script>
+
+    window.chartColors = {
+        green: '#75c181', // rgba(117,193,129, 1)
+        blue: '#5b99ea', // rgba(91,153,234, 1)
+        gray: '#a9b5c9',
+        text: '#252930',
+        border: '#e7e9ed'
+    };
+
+    const data = {
+        labels: [{% for ticker in portfolio.ticker_list%}"{{ ticker|safe }}",{% endfor %}],
+        datasets: [{
+            label: 'My First Dataset',
+            data: [{% for weight in portfolio.weight_list%}{{ weight|safe }},{% endfor %}],
+            backgroundColor:[{% for color in portfolio.color_list%}"{{ color|safe }}",{% endfor %}],
+            hoverOffset: 4
+        }]
+    };
+
+    // get chart canvas
+    var ctx = document.getElementById("assets-distribution").getContext("2d");
+    
+    // create the chart using the chart canvas
+    var myChart = new Chart(ctx, {
+        type: 'pie',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutoutPercentage: 0,
+            tooltips: {
+                titleMarginBottom: 10,
+                bodySpacing: 10,
+                xPadding: 16,
+                yPadding: 16,
+                borderColor: window.chartColors.border,
+                borderWidth: 1,
+                backgroundColor: '#fff',
+                bodyFontColor: window.chartColors.text,
+                titleFontColor: window.chartColors.text,
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                    return data['labels'][tooltipItem['index']] + ': ' + data['datasets'][0]['data'][tooltipItem['index']] + '%';
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+
+{%  endblock %}

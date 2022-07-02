@@ -1,18 +1,52 @@
-{% extends  "base.html" %}
-{% block title %} Lista Carteras {% endblock %}
+<!--Portfolio List Template-->
+<div class="row">
+    {% if list_portfolio %}
+        {% for portfolio in list_portfolio %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-margin">
+                    <div class="card-header no-border">
+                        <h5 class="card-title">CARTERA</h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="widget-49">
+                            <div class="widget-49-title-wrapper">
+                                <div class="widget-49-date-primary">
+                                    <span class="widget-49-date-day">{{ portfolio.start_dt.day }}</span>
+                                    <span class="widget-49-date-month">{{ portfolio.start_dt.strftime("%b") }}</span>
+                                </div>
+                                <div class="widget-49-meeting-info">
+                                    <span class="widget-49-pro-title">{{ portfolio.name }}</span>
+                                    <span class="widget-49-meeting-time"></span>
+                                </div>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <ul class="list-group-item widget-49-meeting-points" style="list-style-type:none;">
+                                    <li class="widget-49-meeting-item"><span>Capital Inicial: {{ portfolio.starting_cash }} </span></li>
+                                    <li class="widget-49-meeting-item"><span>Moneda: {{ portfolio.currency }} </span></li>
+                                    <li class="widget-49-meeting-item">
+                                        <span>Activos:
+                                            {% for asset,position in portfolio.portfolio_to_dict().items() %}  
+                                                {{ asset }} 
+                                            {% endfor %}
+                                        </span>
+                                    </li>
+                                </ul>
+                                <ul class="list-group-item widget-49-meeting-points" style="list-style-type:none;">
+                                    <li class="widget-49-meeting-item"><span>Capital Actual: {{ "{:.2f}".format(portfolio.current_cash|float) }} </span></li>
+                                    <li class="widget-49-meeting-item"><span>Valor de Mercado: {{ "{:.2f}".format(portfolio.total_market_value|float) }} </span></li>
+                                    <li class="widget-49-meeting-item"><span>PyG Total: {{ "{:.2f}".format(portfolio.total_pnl|float) }} </span></li>
+                                </ul>
 
-{% block content %}  
-    <h1>LISTA DE CARTERAS</h1>
-    <div>
-        {% if list_portfolio %}
-            <ul>
-                {% for portfolio in list_portfolio %}
-                    <li><a href="/view-portfolio?id={{portfolio.id}}">{{portfolio.name}}</a></li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No existen carteras!</p>
-        {% endif %}
-    </div>
-
-{% endblock %}
+                            </ul>
+                            <div class="widget-49-meeting-action">
+                                <a href="/view-portfolio?id={{portfolio.id}}" class="btn btn-sm btn-flash-border-primary">Ver</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No existen carteras!</p>
+    {% endif %}
+</div>

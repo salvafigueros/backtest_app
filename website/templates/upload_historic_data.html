@@ -3,42 +3,110 @@
 
 {% block content %}  
 
-
-    <div>
-        <p>Elige si subir datos de acciones o futuros:</p>
-        <button onclick=show_upload_stock_prices()>Acciones</button>
-        <button onclick=show_upload_future_prices()>Futuros</button>
-        <div id="upload_stock_prices" style="display:none">
-            <form method="POST" action="/upload-historic-data-stocks">
-                <fieldset>
-                    <legend>Subir Datos Históricos de una Acción</legend>
-                    <p>Rellenar los campos que aparecen a continuación para subir los datos históricos de la acción cuyo ticker se introduce.</p>
-                    <p><label>Ticker:</label> <input type="text" name="ticker" /></p>
-                    <p><label>Nombre de la Compañía:</label> <input type="text" name="company_name" /> Rellenar en caso de que los datos sean de una acción nueva para el sistema. </p>
-                    <p><label>Mercado:</label> <input type="text" name="market" /> Rellenar en caso de que los datos sean de una acción nueva para el sistema. </p>
-                    <p><label>Moneda:</label> <input type="text" name="currency" /> Rellenar en caso de que los datos sean de una acción nueva para el sistema. </p>
-                    <p><label>Fecha de inicio:</label> <input type="date" name="first_date" /></p>
-                    <p><label>Fecha de final:</label> <input type="date" name="last_date" /></p>
-                    <button type="submit" name="upload_historic_data">Subir</button>
-                </fieldset>
-            </form>
-        </div>
-        <div id="upload_future_prices" style="display:none">
-            <form method="POST" action="/upload-historic-data-futures">
-                <fieldset>
-                    <legend>Subir Datos Históricos de un Futuro</legend>
-                    <p>Rellenar los campos que aparecen a continuación para subir los datos históricos del futuro cuyo ticker se introduce.</p>
-                    <p><label>Ticker:</label> <input type="text" name="ticker" /></p>
-                    <p><label>Nombre del Futuro:</label> <input type="text" name="futures_name" /> Rellenar en caso de que los datos sean de un futuro nuevo para el sistema. </p>
-                    <p><label>Moneda:</label> <input type="text" name="currency" /> Rellenar en caso de que los datos sean de una acción nueva para el sistema. </p>
-                    <p><label>Fecha de inicio:</label> <input type="date" name="first_date" /></p>
-                    <p><label>Fecha de final:</label> <input type="date" name="last_date" /></p>
-                    <button type="submit" name="upload_historic_data">Subir</button>
-                </fieldset>
-            </form>
+    <div class="container mt-5">
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-md-8">
+                <div class="accordion accordion-flush" id="accordionFlushExample">
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="flush-headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                          Acciones
+                        </button>
+                      </h2>
+                      <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body p-5">
+                            {% block stockform %}
+                                <form method="POST" action="/upload-historic-data-stocks">
+                                    <h3 class="text-center mb-3" id="">Subir Datos Históricos de una Acción</h3>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="ticker" class="form-label">Ticker:</label> 
+                                                <input type="text" name="ticker" class="form-control" />
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="company_name" class="form-label">Nombre Compañía:</label> 
+                                                <input type="text" name="company_name" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="market" class="form-label">Mercado:</label> 
+                                                <input type="text" name="market" class="form-control" />
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="currency" class="form-label">Moneda</label> 
+                                                <input type="text" name="currency" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="first_date" class="form-label">Fecha de Inicio:</label> 
+                                                <input type="date" name="first_date" class="form-control" />
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="last_date" class="form-label">Fecha de Fin:</label> 
+                                                <input type="date" name="last_date" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row d-flex justify-content-center align-items-center">
+                                            <div class="col-md-4 text-center">
+                                                <button class="btn btn-primary btn-lg btn-block my-2" type="submit" id="upload_historical_data" >Subir</button>
+                                            </div>
+                                        </div>
+                                </form>
+                            {% endblock %}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="flush-headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                          Futuros
+                        </button>
+                      </h2>
+                      <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body p-5"> 
+                            {% block futureform %}
+                                <form method="POST" action="/upload-historic-data-futures">
+                                    <h3 class="text-center mb-3" id="">Subir Datos Históricos de un Futuro</h3>
+                                        <div class="row mb-3">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="ticker" class="form-label">Ticker:</label> 
+                                                <input type="text" name="ticker" class="form-control" />
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="futures_name" class="form-label">Nombre Futuro:</label> 
+                                                <input type="text" name="futures_name" class="form-control" />
+                                            </div>
+                                            <div class="col-md-2 mb-3">
+                                                <label for="currency" class="form-label">Moneda</label> 
+                                                <input type="text" name="currency" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="first_date" class="form-label">Fecha de Inicio:</label> 
+                                                <input type="date" name="first_date" class="form-control" />
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="last_date" class="form-label">Fecha de Fin:</label> 
+                                                <input type="date" name="last_date" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row d-flex justify-content-center align-items-center">
+                                            <div class="col-md-4 text-center">
+                                                <button class="btn btn-primary btn-lg btn-block my-2" type="submit" id="upload_historical_data" >Subir</button>
+                                            </div>
+                                        </div>
+                                </form>
+                            {%  endblock %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+            </div>    
         </div>
     </div>
-
     
 
 {% endblock %}

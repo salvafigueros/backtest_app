@@ -2,25 +2,83 @@ from .strategy import Strategy
 from ..event.signalEvent import SignalEvent
 import numpy as np 
 import pandas as pd 
+from .strategyBuyShortMaxMin import StrategyBuyShortMaxMin
 
 class ShortMinStrategy(Strategy):
    
-    def __init__(self, bars, events, time_frame, exit_trade, exit_configuration):
+    def __init__(self, time_frame, exit_trade, exit_configuration, strategy_id=None, bars=None, events=None):
+        self.id = strategy_id
         self.bars = bars
-        self.ticker_list = self.bars.ticker_list 
         self.events = events
         self.time_frame = time_frame
         self.exit_trade = exit_trade
         self.exit_configuration = exit_configuration
 
-        self.bought = self._calculate_initial_bought()
-        self.num_bars = self._calculate_initial_num_bars()
-        self.minimum = self._calculate_initial_minimum()
-        self.days_strategy = self._calculate_initial_days_strategy()
-        self.trailing_stop = self._calculate_initial_trailing_stop()
+        self.started = False
+
+        if self.bars:
+            self.set_bars()
+
+
+    def set_bars(self, bars, ticker_list):
+        self.bars = bars
+
+        if self.bars:
+            self.ticker_list = self.bars.ticker_list 
+            self.bought = self._calculate_initial_bought()
+            self.num_bars = self._calculate_initial_num_bars()
+            self.minimum = self._calculate_initial_minimum()
+            self.days_strategy = self._calculate_initial_days_strategy()
+            self.trailing_stop = self._calculate_initial_trailing_stop()
+
+        return 
+
 
     def get_name(self):
         return "shortmin"
+
+    def get_name_to_html(self):
+        return "Vender Mínimos"
+
+
+    def exit_trade_to_html(self):
+        if self.exit_trade == "exit_time":
+            return "Salida por Tiempo"
+        elif self.exit_trade == "trailing_stop":
+            return "Salida por Trailing Stop"
+
+        return ""
+
+    def exit_configuration_to_html(self):
+        if self.exit_trade == "exit_time":
+            if self.exit_configuration == 1:
+                return "Nº de Días de cada Operación: 50'%' de los días del Marco Temporal"
+            elif self.exit_configuration == 2:
+                return " Nº de Días de cada Operación: 100'%' de los días del Marco Temporal"
+            elif self.exit_configuration == 3:
+                return "Nº de Días de cada Operación: 150'%' de los días del Marco Temporal"
+
+        elif self.exit_trade == "trailing_stop":
+            if self.exit_configuration in (1, 2, 3):
+                return "Multiplicador ATR: " + str(self.exit_configuration)
+            
+        return ""
+
+
+    def to_html(self):
+        html = """ 
+                <ul class="list-group-item widget-49-meeting-points" style="list-style-type:none;">
+                    <li class="widget-49-meeting-item"><span> Estrategia: """ + self.get_name_to_html() + """</span></li>
+                    <li class="widget-49-meeting-item"><span> Marco Temporal: """ + str(self.time_frame) + """ días </span></li>
+                    <li class="widget-49-meeting-item"><span> Tipo de Salida: """ + self.exit_trade_to_html() + """ </span></li>
+                    <li class="widget-49-meeting-item"><span>""" + self.exit_configuration_to_html() + """ </span></li>
+                </ul>
+               """
+     
+        return html
+
+    def save_strategy(self, strategy_id):
+        return StrategyBuyShortMaxMin.create_strategy(strategy_id, self.get_name(), self.time_frame, self.exit_trade, self.exit_configuration)
 
     def _calculate_initial_bought(self):
         bought = {}
@@ -106,6 +164,7 @@ class ShortMinStrategy(Strategy):
                     self.num_bars[t] += 1
 
                     if(self.num_bars[t] > self.time_frame):
+                        self.started = True
                         if self.bought[t] == False:
                             if bars[0][4] <= self.minimum[t]:
                                 signal = SignalEvent(bars[0][0], bars[0][1], 'SHORT')

@@ -3,16 +3,143 @@
 
 {% block content %}  
 
-    <form method="POST">
-        <fieldset>
-            <legend>Eliminar Datos Históricos</legend>
-            <p>Rellenar los campos que aparecen a continuación para eliminar los datos históricos de los activos financieros correspondientes.</p>
-            <p><label>Ticker:</label> <input type="text" name="ticker" /></p>
-            <p><label>Fecha de inicio:</label> <input type="date" name="first_date" /></p>
-            <p><label>Fecha de final:</label> <input type="date" name="last_date" /></p>
-            <p><label>Eliminar todo:</label> <input type="checkbox" name="delete_all" /></p>
-            <button type="submit" name="delete_historic_data">Eliminar</button>
-        </fieldset>
-    </form>
+    <div class="container mt-5">
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-md-6">
+                <div class="card-body p-5">
+                    <form method="POST" id="regForm">
+                        <h1 class="text-center" id="register">Eliminar Datos Históricos</h1>
+                        <div class="all-steps" id="all-steps"> <span class="step" role="button" onclick="calculateTab(0)"></span> <span class="step" role="button" onclick="calculateTab(1)"></span> </div>
+                        <div class="tab">
+                            <div class="mb-3">
+                                <p>Elegir el activo financiero cuyos datos históricos se quiere eliminar:</p>
+                                <label for="ticker" class="form-label">Ticker</label>
+                                <input type="text" class="form-control" name="ticker" id="ticker" />
+                            </div>
+                        </div>
+                        <div class="tab">
+                            <p>Seleccionar las fechas de los precios que se quiere eliminar:</p>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Fecha de Inicio</label>
+                                <input type="date" class="form-control" name="first_date" id="first_date" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Fecha Final</label>
+                                <input type="date" class="form-control" name="last_date" id="last_date" />
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input class="form-check-input" type="checkbox" name="delete_all" id="delete_all" /> 
+                                <label class="form-check-label" for="delete_all">Seleccionar Todo</label> 
+                            </div>
+
+
+                        </div>
+
+                        <div style="overflow:auto;" id="nextprevious">
+                            <div style="float:right;"> <button class="btn btn-primary btn-lg btn-block my-2" type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button> <button class="btn btn-primary btn-lg btn-block my-2" type="button" id="nextBtn" onclick="nextPrev(1)">Next</button> </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        /*
+        $(document).ready(function(){
+            var maxField = 10; //Input fields increment limitation
+            var addButton = $('.add_button'); //Add button selector
+            var wrapper = $('.field_wrapper'); //Input field wrapper
+            var fieldHTML = '<div><h3>Activo 1</h3><p><label>Ticker:</label> <input type="text" name="asset[]" /></p><p><label>Nº de Acciones/Contratos:</label> <input type="number" name="quantity[]" /></p><a href="javascript:void(0);" class="remove_button" title="Remove field">Eliminar Activo<img src=""/></a></div>'; //New input field html 
+            var x = 1; //Initial field counter is 1
+            $(addButton).click(function(){ //Once add button is clicked
+                if(x < maxField){ //Check maximum number of input fields
+                    x++; //Increment field counter
+                    $(wrapper).append(fieldHTML); // Add field html
+                }
+            });
+            $(wrapper).on('click', '.remove_button', function(e){ //Once remove button is clicked
+                e.preventDefault();
+                $(this).parent('div').remove(); //Remove field html
+                x--; //Decrement field counter
+            });
+        }); 
+
+        */
+
+        //your javascript goes here
+        var currentTab = 0;
+        document.addEventListener("DOMContentLoaded", function(event) {
+
+
+            showTab(currentTab);
+
+        });
+
+        function showTab(n) {
+            var x = document.getElementsByClassName("tab");
+            x[n].style.display = "block";
+            if (n == 0) {
+                document.getElementById("prevBtn").style.display = "none";
+            } else {
+                document.getElementById("prevBtn").style.display = "inline";
+            }
+            if (n == (x.length - 1)) {
+                $("#nextBtn").replaceWith("<button class='btn btn-primary btn-lg btn-block' type='submit' name='delete' id='nextBtn'>Eliminar</button>")
+                //document.getElementById("nextBtn").innerHTML = "Crear Cartera";
+            } else {
+                $("#nextBtn").replaceWith("<button class='btn btn-primary btn-lg btn-block' type='button' id='nextBtn' onclick='nextPrev(1)''>Next</button>")
+                //document.getElementById("nextBtn").innerHTML = "Next";
+            }
+            fixStepIndicator(n)
+        }
+
+        function nextPrev(n) {
+            var x = document.getElementsByClassName("tab");
+            if (n == 1 && !validateForm()) return false;
+            x[currentTab].style.display = "none";
+            currentTab = currentTab + n;
+            if (currentTab >= x.length) {
+                // document.getElementById("regForm").submit();
+                // return false;
+                //alert("sdf");
+                document.getElementById("nextprevious").style.display = "none";
+                document.getElementById("all-steps").style.display = "none";
+                document.getElementById("register").style.display = "none";
+                //document.getElementById("text-message").style.display = "block";
+            }
+            showTab(currentTab);
+        }
+
+        function calculateTab(n) {
+            var x = document.getElementsByClassName("tab");
+            if (n > currentTab && !validateForm()) return false;
+            x[currentTab].style.display = "none";
+            currentTab = n;
+            if (currentTab >= x.length) {
+                // document.getElementById("regForm").submit();
+                // return false;
+                //alert("sdf");
+                document.getElementById("nextprevious").style.display = "none";
+                document.getElementById("all-steps").style.display = "none";
+                document.getElementById("register").style.display = "none";
+                document.getElementById("text-message").style.display = "block";
+            }
+            showTab(currentTab);
+        }
+
+        function validateForm() {
+            var x, y, i, valid = true;
+            x = document.getElementsByClassName("tab");
+            y = x[currentTab].getElementsByTagName("input");
+            for (i = 0; i < y.length; i++) { if (y[i].value=="" ) { y[i].className +=" invalid" ; valid=false; } } if (valid) { document.getElementsByClassName("step")[currentTab].className +=" finish" ; } return valid; } function fixStepIndicator(n) { var i, x=document.getElementsByClassName("step"); for (i=0; i < x.length; i++) { x[i].className=x[i].className.replace(" active", "" ); } x[n].className +=" active" ; }
+
+    </script>
+
 
 {% endblock %}
+
+
+

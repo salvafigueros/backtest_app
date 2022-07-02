@@ -1,0 +1,104 @@
+{% extends  "base.html" %}
+{% block title %} DASHBOARD {% endblock %}
+
+{% block content %}  
+    <div class="container">
+
+        <h1 class="app-page-title">DASHBOARD</h1>
+
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="app-card app-card-progress-list h-100 shadow-sm">
+                    <div class="app-card-header p-3">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-auto">
+                                <h4 class="app-card-title">LISTA DE BACKTESTINGS</h4>
+                            </div><!--//col-->
+                            <div class="col-auto">
+                                <div class="card-header-action">
+                                    <a class="mx-2" style="text-decoration:none;" href="{{url_for('views_backtesting.backtesting_form')}}">Ejecutar Backtesting</a>
+                                    <a  style="text-decoration:none;" href="{{url_for('views_backtesting.list_my_backtestings', id=session['user_id'])}}">Ver Todos</a>
+                                </div><!--//card-header-actions-->
+                            </div><!--//col-->
+                        </div><!--//row-->
+                    </div><!--//app-card-header-->
+                    <div class="app-card-body mt-4 mx-4">
+                        {% include 'list_backtesting.html' %}    
+                    </div><!--//app-card-body-->
+                </div><!--//app-card-->
+            </div><!--//col-->
+        </div>
+
+
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="app-card app-card-progress-list h-100 shadow-sm">
+                    <div class="app-card-header p-3">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-auto">
+                                <h4 class="app-card-title">LISTA DE CARTERAS</h4>
+                            </div><!--//col-->
+                            <div class="col-auto">
+                                <div class="card-header-action">
+                                    <a class="mx-2" style="text-decoration:none;" href="{{url_for('views.create_portfolio')}}">Crear Cartera</a>
+                                    <a style="text-decoration:none;" href="{{url_for('views.list_my_portfolios', id=session['user_id'])}}">Ver Todas</a>
+                                </div><!--//card-header-actions-->
+                            </div><!--//col-->
+                        </div><!--//row-->
+                    </div><!--//app-card-header-->
+                    <div class="app-card-body mt-4 mx-4">
+                        {% include 'list_portfolio.html' %}    
+                    </div><!--//app-card-body-->
+                </div><!--//app-card-->
+            </div><!--//col-->
+        </div>
+
+
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="app-card app-card-progress-list h-100 shadow-sm">
+                    <div class="app-card-header p-3">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-auto">
+                                <h4 class="app-card-title">LISTA DE BACKTESTING MANUALES</h4>
+                            </div><!--//col-->
+                            <div class="col-auto">
+                                <div class="card-header-action">
+                                    <a class="mx-2" style="text-decoration:none;" href="{{url_for('views_other.backtesting_manual_form')}}">Ejecutar Backtesting Manual</a>
+                                    <a style="text-decoration:none;" href="{{url_for('views_other.list_backtesting_manual', id=session['user_id'])}}">Ver Todos</a>
+                                </div><!--//card-header-actions-->
+                            </div><!--//col-->
+                        </div><!--//row-->
+                    </div><!--//app-card-header-->
+                    <div class="app-card-body mt-4 mx-4">
+                        {% include 'list_backtesting_manual.html' %}    
+                    </div><!--//app-card-body-->
+                </div><!--//app-card-->
+            </div><!--//col-->
+        </div>
+
+
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="app-card app-card-progress-list h-100 shadow-sm">
+                    <div class="app-card-header p-3">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-auto">
+                                <h4 class="app-card-title">DIARIO DE TRADING</h4>
+                            </div><!--//col-->
+                            <div class="col-auto">
+                                <div class="card-header-action">
+                                    <a class="mx-2" style="text-decoration:none;" href="{{url_for('views_other.write_journal')}}">Escribir</a>
+                                    <a style="text-decoration:none;" href="{{url_for('views_other.list_journal', id=session['user_id'])}}">Ver Todos</a>
+                                </div><!--//card-header-actions-->
+                            </div><!--//col-->
+                        </div><!--//row-->
+                    </div><!--//app-card-header-->
+                    <div class="app-card-body mt-4 mx-4">
+                        {% include 'list_journal.html' %}    
+                    </div><!--//app-card-body-->
+                </div><!--//app-card-->
+            </div><!--//col-->
+        </div>
+    </div>
+{% endblock %}

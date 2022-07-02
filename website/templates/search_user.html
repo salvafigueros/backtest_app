@@ -1,14 +1,30 @@
 {% extends  "base.html" %}
-{% block title %} Search User {% endblock %}
+{% block title %} USUARIO {% endblock %}
 
 {% block content %}  
 
-    <form method="POST">
-        <fieldset>
-            <legend>Buscar Usuario</legend>
-            <p><label>Nombre de usuario:</label> <input type="text" name="user_name" /></p>
-            <button type="submit" name="search_user">Entrar</button>
-        </fieldset>
-    </form>
+<div class="container">
+
+    <h1 class="app-page-title">LISTA DE USUARIOS</h1>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="app-card app-card-progress-list h-100 shadow-sm">
+                <div class="app-card-header p-3">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="col-auto">
+                            <h4 class="app-card-title">Nombre de Usuario: {{ query }} </h4>
+                        </div><!--//col-->
+                    </div><!--//row-->
+                </div><!--//app-card-header-->
+                <div class="app-card-body mt-4 mx-4">
+                    {% include 'list_user.html' %}    
+                </div><!--//app-card-body-->
+            </div><!--//app-card-->
+        </div><!--//col-->
+    </div>
+
+
+</div>
 
 {% endblock %}

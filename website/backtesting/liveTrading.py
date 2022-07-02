@@ -1,4 +1,0 @@
-
-
-class LiveTrading(object):
-    pass

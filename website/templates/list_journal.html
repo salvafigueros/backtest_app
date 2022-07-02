@@ -1,0 +1,42 @@
+<!--Journal List Template-->
+<div class="row">
+    {% if list_journal %}
+        {% for journal in list_journal %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-margin">
+                    <div class="card-header no-border">
+                        <h5 class="card-title">DIARIO DE TRADING</h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="widget-49">
+                            <div class="widget-49-title-wrapper">
+                                <div class="widget-49-date-primary">
+                                    <span class="widget-49-date-day">{{journal.date.day}}</span>
+                                    <span class="widget-49-date-month">{{ journal.date.strftime("%b") }}</span>
+                                </div>
+                                <div class="widget-49-meeting-info">
+                                    <span class="widget-49-pro-title">{{ journal.date.strftime("%d/%m/%Y") }}</span>
+                                    <span class="widget-49-meeting-time">{{ user.user_name }}</span>
+                                </div>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <ul class="list-group-item widget-49-meeting-points" style="list-style-type:none;">
+                                    <li class="widget-49-meeting-item"><span>Fecha: {{ journal.date.strftime("%d/%m/%Y") }} </span></li>
+                                </ul>
+                                <ul class="list-group-item widget-49-meeting-points" style="list-style-type:none;">
+                                    <li class="widget-49-meeting-item"><span class="text-hidden-dots">{{ journal.text }} </span></li>
+                                </ul>
+
+                            </ul>
+                            <div class="widget-49-meeting-action">
+                                <a href="{{url_for('views_other.journal', id = journal.id)}}" class="btn btn-sm btn-flash-border-primary">Ver</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No has escrito nada en tu diario de trading!</p>
+    {% endif %}
+</div>

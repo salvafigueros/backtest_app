@@ -11,16 +11,8 @@ import datetime
 from decimal import *
 
 class PositionHandler(object):
-    """
-    A class that keeps track of, and updates, the current
-    list of Position instances stored in a Portfolio entity.
-    """
 
     def __init__(self, currency="USD"):
-        """
-        Initialise the PositionHandler object to generate
-        an ordered dictionary containing the current positions.
-        """
         self.currency = currency
         self.positions = OrderedDict()
         self.c = CurrencyRates()
@@ -85,16 +77,11 @@ class PositionHandler(object):
 
 
     def transact_position(self, portfolio_id, transaction):
-        """
-        Execute the transaction and update the appropriate
-        position for the transaction's asset accordingly.
-        """
         asset = transaction.asset
         if asset in self.positions:
             self.positions[asset].transact(transaction)
             Position.update(self.positions[asset])
             position_portfolio = PositionPortfolio(portfolio_id, self.positions[asset].id)
-            #position_portfolio = PositionPortfolio.insert(position_portfolio)
         else:
             position = Position.create_position(transaction)
             self.positions[asset] = position
@@ -104,7 +91,6 @@ class PositionHandler(object):
         transaction.position_id = self.positions[asset].id
         transaction = Transaction.update(transaction)
 
-        # If the position has zero quantity remove it
         if self.positions[asset].net_quantity == 0:
             del self.positions[asset]
 
@@ -118,9 +104,6 @@ class PositionHandler(object):
         return asset.currency
 
     def total_market_value(self):
-        """
-        Calculate the sum of all the positions' market values.
-        """
         return sum(
             self.c.convert(PositionHandler.get_asset_currency(asset), self.currency, pos.market_value)
             for asset, pos in self.positions.items() 

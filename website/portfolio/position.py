@@ -60,7 +60,6 @@ class Position(object):
         self.buy_commission = buy_commission
         self.sell_commission = sell_commission
 
-        #Should I include attributes to keep the initial values of a position just for the sake of information?
 
 
     @staticmethod
@@ -182,20 +181,8 @@ class Position(object):
         # 3. return Position Object
         return position
 
-    @classmethod
-    def open_from_transaction(cls, transaction):
-        """
-        Constructs a new Position instance from the provided
-        Transaction.
-        Parameters
-        ----------
-        transaction : `Transaction`
-            The transaction with which to open the Position.
-        Returns
-        -------
-        `Position`
-            The instantiated position.
-        """
+    @staticmethod
+    def open_from_transaction(transaction):
         asset = transaction.asset
         current_price = transaction.price
         current_dt = transaction.dt
@@ -215,7 +202,7 @@ class Position(object):
             buy_commission = 0.0
             sell_commission = transaction.commission
 
-        return cls(
+        return Position(
             transaction.user_id,
             asset,
             current_price,
@@ -435,22 +422,6 @@ class Position(object):
         else:
             self.current_price = market_price
 
-    def _transact_buy(self, quantity, price, commission):
-        """
-        Handle the accounting for creating a new long leg for the
-        Position.
-        Parameters
-        ----------
-        quantity : `int`
-            The additional quantity of assets to purchase.
-        price : `float`
-            The price at which this leg was purchased.
-        commission : `float`
-            The commission paid to the broker for the purchase.
-        """
-        self.avg_bought = ((self.avg_bought * self.buy_quantity) + Decimal((quantity * price))) / (self.buy_quantity + quantity)
-        self.buy_quantity += Decimal(quantity)
-        self.buy_commission += Decimal(commission)
 
     def _transact_sell(self, quantity, price, commission):
         """
@@ -470,34 +441,22 @@ class Position(object):
         self.sell_commission += commission
 
     def transact(self, transaction):
-        """
-        Calculates the adjustments to the Position that occur
-        once new units in an Asset are bought and sold.
-        Parameters
-        ----------
-        transaction : `Transaction`
-            The Transaction to update the Position with.
-        """
-        if self.asset != transaction.asset:
-            raise ValueError(
-                'Failed to update Position with asset %s when '
-                'carrying out transaction in asset %s. ' % (
-                    self.asset, transaction.asset
-                )
-            )
-
-        # Nothing to do if the transaction has no quantity
         if int(floor(transaction.quantity)) == 0:
             return
 
-        # Depending upon the direction of the transaction
-        # ensure the correct calculation is called
-        if transaction.quantity > 0:
-            self._transact_buy(transaction.quantity, transaction.price, transaction.commission)
-        else:
-            self._transact_sell(Decimal(-1.0) * transaction.quantity, transaction.price, transaction.commission)
 
-        # Update the current trade information
+        if transaction.quantity > 0:
+            quantity = transaction.quantity
+            self.avg_bought = ((self.avg_bought * self.buy_quantity) + Decimal((quantity * transaction.price))) / (self.buy_quantity + quantity)
+            self.buy_quantity += Decimal(quantity)
+            self.buy_commission += Decimal(transaction.commission)        
+            
+        else:
+            quantity = Decimal(-1.0)*transaction.quantity
+            self.avg_sold = ((self.avg_sold * self.sell_quantity) + (quantity * transaction.price)) / (self.sell_quantity + quantity)
+            self.sell_quantity += quantity
+            self.sell_commission += transaction.commission
+
         self.update_current_price(transaction.price, transaction.dt)
         self.current_dt = transaction.dt
 

@@ -1,0 +1,41 @@
+{% extends  "base.html" %}
+{% block title %} DIARIO DE TRADING {% endblock %}
+
+{% block content %}  
+    <div class="container">
+
+        <h1 class="app-page-title">DIARIO DE TRADING</h1>
+
+        {% if 'user_name' in session and (session['user_role'] == "User" and session['user_id'] == user.id) %}
+
+            <div class="app-card app-card-notification shadow-sm mb-4">
+                <div class="app-card-header px-4 py-3">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-lg-auto text-center text-lg-start">
+                            <svg class="profile-image" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                              </svg>						        
+                        </div><!--//col-->
+                        <div class="col-12 col-lg-auto text-center text-lg-start">
+                            <div class="notification-type mb-2"><span class="badge bg-info">{{journal.date.strftime("%d/%m/%Y")}}</span></div>
+                            <h4 class="notification-title mb-1">{{user.user_full_name}} sobre el {{journal.date.strftime("%d/%m/%Y")}}</h4>
+                            
+                            <ul class="notification-meta list-inline mb-0">
+                                <li class="list-inline-item">{{journal.create_dt.strftime("%d/%m/%Y")}}</li>
+                                <li class="list-inline-item">|</li>
+                                <li class="list-inline-item">{{user.user_name}}</li>
+                            </ul>
+                       
+                        </div><!--//col-->
+                    </div><!--//row-->
+                </div><!--//app-card-header-->
+                <div class="app-card-body p-4">
+                    <div class="notification-content">{{journal.text}}</div>
+                </div><!--//app-card-body-->
+            </div><!--//app-card-->
+
+        {% endif %}
+
+        
+    </div>
+{% endblock %}

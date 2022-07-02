@@ -123,6 +123,8 @@ class Portfolio(object):
             for row in records:
                 portfolio = Portfolio(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
                 portfolio.id = row[0]
+                portfolio.pos_handler = PositionHandler.get_positions_by_portfolio_id(portfolio.id, portfolio.currency)
+
                 list_portfolio.append(portfolio)
             
             conn_cursor.close()
@@ -253,9 +255,33 @@ class Portfolio(object):
                 "market_value": pos.market_value,
                 "unrealised_pnl": pos.unrealised_pnl,
                 "realised_pnl": pos.realised_pnl,
-                "total_pnl": pos.total_pnl
+                "total_pnl": pos.total_pnl,
+                "distribution": int((pos.market_value/self.total_market_value)*100)
             }
         return holdings
+
+    @property
+    def ticker_list(self):
+        ticker_list = []
+        for asset, pos in self.pos_handler.positions.items():
+            ticker_list.append(asset)
+        return ticker_list
+
+    @property
+    def weight_list(self):
+        weights = []
+        for asset, pos in self.pos_handler.positions.items():
+            weights.append(int((pos.market_value/self.total_market_value)*100))
+        return weights
+
+    @property
+    def color_list(self):
+        colors = []
+        color_nuance = 192
+        for asset, pos in self.pos_handler.positions.items():
+            colors.append("rgba(75,192," + str(color_nuance) + ",0.4)")
+            color_nuance = color_nuance + 50
+        return colors
 
     def update_market_value_of_asset(self, asset, current_price, current_dt):
         """

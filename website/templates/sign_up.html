@@ -3,30 +3,54 @@
 
 {% block content %}
 
-    <form method="POST">
-        <fieldset>
-            <legend>Crear Cuenta</legend>
-            <div>
-                <label>Nombre de usuario:</label> <input type="text" name="user_name" />
+    <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+            <div class="card shadow-2-strong" style="border-radius: 1rem;">
+            <div class="card-body p-5 text-center">
+
+                <h3 class="mb-5">Crear cuenta</h3>
+
+                <form method="POST">
+
+                    <div class="form-outline mb-4">
+                        <input type="text" name="user_name" class="form-control form-control-lg" />
+                        <label class="form-label" for="typeusernameX">Nombre de Usuario</label>
+                    </div>
+
+                    <div class="form-outline mb-4">
+                        <input type="text" name="user_full_name" class="form-control form-control-lg" />
+                        <label class="form-label" for="typeuserfullnameX">Nombre Completo</label>
+                    </div>
+        
+                    <div class="form-outline mb-4">
+                        <input type="password" name="password" id="typePasswordX" class="form-control form-control-lg" />
+                        <label class="form-label" for="typePasswordX">Password</label>
+                    </div>
+
+                    <div class="form-outline mb-4">
+                        <input type="password" name="password2" id="typePassword2X" class="form-control form-control-lg" />
+                        <label class="form-label" for="typePassword2X">Vuelve a introducir el Password</label>
+                    </div>
+
+                    <div class="form-outline mb-4">
+                        <select name="user_role" class="form-select form-select-lg">
+                            <option value="User">Usuario</option>
+                            <option value="Admin">Administrador</option>
+                        </select>
+                        <label class="form-label" for="typeRolX">Elige tu rol</label>
+                    </div>
+        
+                    <button class="btn btn-primary btn-lg btn-block" type="submit" name="sign_up">Crear cuenta</button>
+
+                    <hr class="my-4">
+
+                </form>
+
             </div>
-            <div>
-                <label>Nombre completo:</label> <input type="text" name="user_full_name" />
             </div>
-            <div>
-                <label>Password:</label> <input type="password" name="password" />
-            </div>
-            <div>
-                <label>Vuelve a introducir el Password:</label> <input type="password" name="password2" />
-            </div>
-            <div>
-                <label>Elige tu rol:</label> 
-                <select name="user_role">
-                    <option value="User">Usuario</option>
-                    <option value="Admin">Administrador</option>
-                </select>
-            </div>
-            <div><button type="submit" name="registro">Registrar</button></div>
-        </fieldset>
-    </form>
+        </div>
+        </div>
+    </div>
 
 {% endblock %}

@@ -12,7 +12,6 @@ class Transaction(object):
         self.quantity = quantity
         self.price = price
         self.dt = dt
-        #self.order_id = order_id
         self.commission = Decimal(commmission)
         self.position_id =  position_id
 
@@ -101,7 +100,6 @@ class Transaction(object):
     def create_transaction(user_id, asset, quantity):
         # 1. Get Asset's Actual Price
         price = Stock.get_last_quote(asset)
-        print(type(price))
         # 2. Get dt of Asset's Actual Price
         dt = datetime.datetime.now()
         # 3. Get commission

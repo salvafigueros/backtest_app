@@ -10,12 +10,13 @@ from pandas_datareader import data
 
 class Stock(Asset):
 
-    def __init__(self, ticker, company_name, market, currency, metric=0):
+    def __init__(self, ticker, company_name, market, currency, metric=0, asset_id=None):
         self.ticker = ticker
         self.company_name = company_name
         self.market = market
         self.currency = currency
         self.metric = metric
+        self.id = asset_id
 
     def __str__(self):
         """
@@ -40,8 +41,7 @@ class Stock(Asset):
     def insert(stock):
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
-        conn_cursor.execute("INSERT INTO stocks(ticker, company_name, market, currency) VALUES(%s, %s, %s, %s)", (stock.ticker, stock.company_name, stock.market, stock.currency))
-        stock.id = conn_cursor.lastrowid
+        conn_cursor.execute("INSERT INTO stocks(id, ticker, company_name, market, currency) VALUES(%s, %s, %s, %s, %s)", (stock.id, stock.ticker, stock.company_name, stock.market, stock.currency))
         conn_bd.commit()
 
         conn_cursor.close()
@@ -82,9 +82,19 @@ class Stock(Asset):
 
     @staticmethod
     def create_stock(ticker, company_name, market, currency):
-        stock = Stock(ticker, company_name, market, currency)
+        #Insert row in table asset_class before inserting in table future
+        conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
+        conn_cursor = conn_bd.cursor()
+        conn_cursor.execute("INSERT INTO asset_class(asset_class) VALUES(%s)", ("Stocks",))
+        asset_id = conn_cursor.lastrowid
+        conn_bd.commit()
 
-        return Stock.save_stock(stock)
+        conn_cursor.close()
+        conn_bd.close()
+        
+        stock = Stock(ticker, company_name, market, currency, asset_id=asset_id)
+
+        return Stock.insert(stock)
 
 
     @staticmethod
@@ -134,6 +144,34 @@ class Stock(Asset):
         conn_bd.close()
 
         return False
+
+
+    @staticmethod
+    def get_list_ticker_market(market):
+        conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
+        conn_cursor = conn_bd.cursor(buffered=True)
+        conn_cursor.execute("SELECT * FROM stocks S WHERE S.market = %s", (market,))
+        conn_bd.commit()
+
+        if conn_cursor.rowcount > 0:
+            records = conn_cursor.fetchall()
+            list_stocks = []
+            for row in records:
+                stock = Stock(row[1], row[2], row[3], row[4], row[5])
+                stock.id = row[0]
+                list_stocks.append(stock)
+            
+            conn_cursor.close()
+            conn_bd.close()
+            return list_stocks
+        else:
+            pass
+            #print("Error al consultar en la BD")
+        
+        conn_cursor.close()
+        conn_bd.close()
+
+        return []
     
 
     #Check if that price is already in bd 
@@ -155,13 +193,15 @@ class Stock(Asset):
         return False
 
     def upload_historic_data(self, first_date, last_date):
-        #print(first_date)
-        #print(last_date)
         period1 = int(datetime.strptime(first_date, '%Y-%m-%d').timestamp())
         period2 = int(datetime.strptime(last_date, '%Y-%m-%d').timestamp())
         
         query_string = f'https://query1.finance.yahoo.com/v7/finance/download/{self.ticker}?period1={period1}&period2={period2}&interval=1d&events=history&includeAdjustedClose=true'    
-        df = pd.read_csv(query_string)
+        
+        try:
+            df = pd.read_csv(query_string)
+        except:
+            return False
 
         df.rename(columns={'Date': 'date', 'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Adj Close': 'adjusted_close', 'Volume': 'volume'}, inplace = True)
         df.insert(0, 'stock_id', self.id)
@@ -210,7 +250,6 @@ class Stock(Asset):
 
 
     def get_stock_prices_dates(self, first_date=None, last_date=None):
-
         conn_bd = mysql.connector.connect(host="localhost", user="backtesting", passwd="backtesting", database="backtesting")
         conn_cursor = conn_bd.cursor()
 
@@ -218,8 +257,14 @@ class Stock(Asset):
             sql = "SELECT date, open, high, low, close, adjusted_close, volume FROM stock_prices WHERE stock_id=%s ORDER BY date"
             sql_query = pd.read_sql_query(sql, conn_bd, params=[self.id]) 
         else:
-            first_date_time = datetime.strptime(first_date, '%Y-%m-%d').date()
-            last_date_time = datetime.strptime(last_date, '%Y-%m-%d').date()
+            first_date_time = first_date
+            if isinstance(first_date_time, str):
+                first_date_time = datetime.strptime(first_date, '%Y-%m-%d').date()
+            
+            last_date_time = last_date
+            if isinstance(last_date_time, str):
+                last_date_time = datetime.strptime(last_date, '%Y-%m-%d').date()
+
             sql = "SELECT date, open, high, low, close, adjusted_close, volume FROM stock_prices WHERE stock_id=%s AND date BETWEEN %s AND %s ORDER BY date"
             sql_query = pd.read_sql_query(sql, conn_bd, params=[self.id, first_date_time, last_date_time]) 
 
@@ -234,11 +279,15 @@ class Stock(Asset):
 
     @staticmethod
     def get_last_quote(ticker):
+        """
         ticker_yahoo = yf.Ticker(ticker)
         data = ticker_yahoo.history()
         last_quote = (data.tail(1)['Close'].iloc[0])
-
         return Decimal(last_quote.item())
+        """
+
+        quote = data.get_quote_yahoo(ticker)
+        return Decimal(quote['price'][0])
 
 
     @staticmethod
@@ -282,29 +331,21 @@ class Stock(Asset):
         return stock
 
     @staticmethod
-    def get_list_stocks_by_metric(metric):
-        list_stocks = Stock.get_all_stocks()
+    def get_list_stocks_by_metric(metric, ticker_list):
         list_stocks_with_metric = []
+        list_stocks = []
 
-        list_tickers = []
-        for stock in list_stocks:
-            list_tickers.append(stock.ticker)
+        for ticker in ticker_list:
+            list_stocks.append(Stock.get_stock_by_ticker(ticker))
 
-        """
-        df = data.get_quote_yahoo(list_tickers)
-        pd.set_option =("display.max_columns", None)
-        print(df.head())
-        """
-
-        market_caps = data.get_quote_yahoo(list_tickers)[metric]
+        market_caps = data.get_quote_yahoo(ticker_list)[metric]
         list_market_caps = market_caps.values.tolist()
 
         for stock, market_cap in zip(list_stocks, list_market_caps):
             stock.metric = market_cap
             stock = Stock.update_metric(stock)
             stock.metric = "{:,}".format(stock.metric).replace(',', '.')
-            list_stocks_with_metric.append(stock)
-            
+            list_stocks_with_metric.append(stock)       
         
         return list_stocks_with_metric
 

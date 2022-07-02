@@ -1,0 +1,229 @@
+{% extends  "base.html" %}
+{% block title %} BACKTESTING {% endblock %}
+
+{% block content %}  
+
+     <!-- HIDDEN DYNAMIC ELEMENT TO CLONE -->
+    <!-- you can replace it with any other elements -->
+    <div class="form-group dynamic-element" style="display:none">
+        <div class="row g-3 my-2">
+        
+            <!-- Replace these fields -->
+            <div class="col-md-11">
+                <input type="text" class="form-control input-asset" placeholder="Activo" name="asset[]" />
+            </div>
+            <!-- End of fields-->
+            <div class="col-md-1">
+                <button class="delete btn btn-danger">X</button>
+            </div>
+        </div>
+    </div>
+    <!-- END OF HIDDEN ELEMENT -->
+
+    <div class="container mt-5">
+
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-md-6">
+                <div class="card-body p-5">
+                    <form method="POST" id="regForm">
+                        {{ form.csrf_token }}
+                        <h1 class="text-center" id="register">Ejecutar Backtesting Por Grupos</h1>
+                        <div class="all-steps" id="all-steps"> 
+                            <span class="step" role="button" onclick="calculateTab(0)"></span> 
+                            <span class="step" role="button" onclick="calculateTab(1)"></span> 
+                            <span class="step" role="button" onclick="calculateTab(2)"></span>
+                            <span class="step" role="button" onclick="calculateTab(3)"></span>
+                            <span class="step" role="button" onclick="calculateTab(4)"></span>
+                            <span class="step" role="button" onclick="calculateTab(5)"></span>
+                        </div>
+                        <div class="tab">
+                            <p>Elegir métrica en función de la cual agrupar los activos:</p>
+                            <div class="mb-3">
+                                {{ form.metric.label(for="metric", class="form-label")}} 
+                                {{ form.metric(class="form-select") }}
+                            </div>
+                        </div>
+                        <div class="tab">
+                            <div class="mb-3">
+                                {{ form.starting_capital.label(for="starting_cash", class="form-label")}} 
+                                {{ form.starting_capital(class="form-control") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.currency.label(for="currency", class="form-label") }}
+                                {{ form.currency(class="form-select") }}
+                            </div>
+    
+                        </div>
+                        <div class="tab">
+                            <p>Elegir los activos financieros sobre los que ejecutar el Backtesting:</p>
+                            <div class="dynamic-stuff">
+                                <!-- Dynamic element will be cloned here -->
+                                <!-- You can call clone function once if you want it to show it a first element-->
+                            </div>
+
+                            <!-- Button -->
+                            <div class="form-group">
+                                <div class="row d-flex justify-content-center align-items-center mb-4">
+                                    <div class="col-md-6 text-center mb-2">
+                                        <button  class="btn add-one text-success" type="button" id="add-one">+ Añadir Activo</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="tab">
+                            <p>Elegir las Fechas entre las cuales ejecutar el Backtesting:</p>
+                            <div class="mb-3">
+                                {{ form.start_dt.label(for="start_dt", class="form-label")}} 
+                                {{ form.start_dt(class="form-control") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.end_dt.label(for="end_dt", class="form-label") }}
+                                {{ form.end_dt(class="form-control") }}
+                            </div>
+    
+                        </div>
+
+                        <div class="tab">
+                            <div class="mb-3 form-floating">
+                                {{ form.strategy(class="form-select") }}
+                                {{ form.strategy.label(for="strategy", class="form-label")}} 
+                            </div>
+                        </div>
+
+                        <div class="tab">
+                            <p>Elegir los parámetros de la estrategia escogida:</p>
+                            <div class="mb-3">
+                                {{ form.time_frame.label(for="time_frame", class="form-label")}} 
+                                {{ form.time_frame(class="form-select") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.exit_trade.label(for="exit_trade", class="form-label") }}
+                                {{ form.exit_trade(class="form-select") }}
+                            </div>
+                            <div class="mb-3" id="form_exit_time_frame">
+                                {{ form.exit_time_frame.label(for="exit_time_frame", class="form-label") }}
+                                {{ form.exit_time_frame(class="form-select") }}
+                            </div>
+                            <div class="mb-3" id="form_atr_multiplier" style="display: none">
+                                {{ form.atr_multiplier.label(for="atr_multiplier", class="form-label") }}
+                                {{ form.atr_multiplier(class="form-select") }}
+                            </div>
+
+    
+                        </div>
+
+                        <div style="overflow:auto;" id="nextprevious">
+                            <div style="float:right;"> <button class="btn btn-primary btn-lg btn-block my-2" type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button> <button class="btn btn-primary btn-lg btn-block my-2" type="button" id="nextBtn" onclick="nextPrev(1)">Next</button> </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        
+        //your javascript goes here
+        var currentTab = 0;
+        document.addEventListener("DOMContentLoaded", function(event) {
+
+
+            showTab(currentTab);
+
+        });
+
+        function showTab(n) {
+            var x = document.getElementsByClassName("tab");
+            x[n].style.display = "block";
+            if (n == 0) {
+                document.getElementById("prevBtn").style.display = "none";
+            } else {
+                document.getElementById("prevBtn").style.display = "inline";
+            }
+            if (n == (x.length - 1)) {
+                $("#nextBtn").replaceWith("<button class='btn btn-primary btn-lg btn-block' type='submit' name='run_backtesting' id='nextBtn'>Ejecutar</button>")
+                //document.getElementById("nextBtn").innerHTML = "Crear Cartera";
+            } else {
+                $("#nextBtn").replaceWith("<button class='btn btn-primary btn-lg btn-block' type='button' id='nextBtn' onclick='nextPrev(1)''>Next</button>")
+                //document.getElementById("nextBtn").innerHTML = "Next";
+            }
+            fixStepIndicator(n)
+        }
+
+        function nextPrev(n) {
+            var x = document.getElementsByClassName("tab");
+            if (n == 1 && !validateForm()) return false;
+            x[currentTab].style.display = "none";
+            currentTab = currentTab + n;
+            if (currentTab >= x.length) {
+                // document.getElementById("regForm").submit();
+                // return false;
+                //alert("sdf");
+                document.getElementById("nextprevious").style.display = "none";
+                document.getElementById("all-steps").style.display = "none";
+                document.getElementById("register").style.display = "none";
+                //document.getElementById("text-message").style.display = "block";
+            }
+
+            if(currentTab == 2){
+                //Write code to show the data available with Ajax Request
+            }
+            showTab(currentTab);
+        }
+
+        function calculateTab(n) {
+            var x = document.getElementsByClassName("tab");
+            if (n > currentTab && !validateForm()) return false;
+            x[currentTab].style.display = "none";
+            currentTab = n;
+            if (currentTab >= x.length) {
+                // document.getElementById("regForm").submit();
+                // return false;
+                //alert("sdf");
+                document.getElementById("nextprevious").style.display = "none";
+                document.getElementById("all-steps").style.display = "none";
+                document.getElementById("register").style.display = "none";
+                document.getElementById("text-message").style.display = "block";
+            }
+            showTab(currentTab);
+        }
+
+        function validateForm() {
+            var x, y, i, valid = true;
+            x = document.getElementsByClassName("tab");
+            y = x[currentTab].getElementsByTagName("input");
+            for (i = 0; i < y.length; i++) { if (y[i].value=="" ) { y[i].className +=" invalid" ; valid=false; } } if (valid) { document.getElementsByClassName("step")[currentTab].className +=" finish" ; } return valid; } function fixStepIndicator(n) { var i, x=document.getElementsByClassName("step"); for (i=0; i < x.length; i++) { x[i].className=x[i].className.replace(" active", "" ); } x[n].className +=" active" ; }
+
+
+        //Clone the hidden element and shows it
+        $('.add-one').click(function(){
+            $('.dynamic-element').first().clone().appendTo('.dynamic-stuff').show();
+            attach_delete();
+        });
+
+
+        //Attach functionality to delete buttons
+        function attach_delete(){
+        $('.delete').off();
+            $('.delete').click(function(){
+                console.log("click");
+                $(this).closest('.form-group').remove();
+            });
+        }
+
+        document.getElementById('exit_trade').addEventListener('change', function () {
+            var style_trailing = this.value == "trailing_stop" ? 'block' : 'none';
+            var style_time = this.value == "exit_time" ? 'block' : 'none';
+            document.getElementById('form_atr_multiplier').style.display = style_trailing;
+            document.getElementById('form_exit_time_frame').style.display = style_time;
+        });
+
+
+    </script>
+
+    
+
+{% endblock %}

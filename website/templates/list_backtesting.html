@@ -1,27 +1,50 @@
-{% extends  "base.html" %}
-{% block title %} BACKTESTING {% endblock %}
+<!--Backtesting List Template-->
+<div class="row">
+    {% if list_backtesting %}
+        {% for backtesting in list_backtesting %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-margin">
+                    <div class="card-header no-border">
+                        <h5 class="card-title">BACKTESTING</h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="widget-49">
+                            <div class="widget-49-title-wrapper">
+                                <div class="widget-49-date-primary">
+                                    <span class="widget-49-date-day">{{ backtesting.start_dt.day }}</span>
+                                    <span class="widget-49-date-month">{{ backtesting.start_dt.strftime("%b") }}</span>
+                                </div>
+                                <div class="widget-49-meeting-info">
+                                    <span class="widget-49-pro-title">{{ backtesting.name }}</span>
+                                    <span class="widget-49-meeting-time"></span>
+                                </div>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <ul class="list-group-item widget-49-meeting-points" style="list-style-type:none;">
+                                    <li class="widget-49-meeting-item"><span>Capital: {{ backtesting.starting_cash }} </span></li>
+                                    <li class="widget-49-meeting-item"><span>Moneda: {{ backtesting.currency }} </span></li>
+                                    <li class="widget-49-meeting-item"><span>Fecha de Inicio: {{ backtesting.start_dt.strftime("%d/%m/%Y") }} </span></li>
+                                    <li class="widget-49-meeting-item"><span>Fecha de Fin: {{ backtesting.end_dt.strftime("%d/%m/%Y") }} </span></li>
+                                    <li class="widget-49-meeting-item">
+                                        <span>Activos:
+                                            {% for ticker in backtesting.backtesting_assets.ticker_list %}    
+                                                {{ ticker }} 
+                                            {% endfor %}
+                                        </span>
+                                    </li>
+                                </ul>
+                                {{backtesting.strategy.to_html() | safe}}
 
-{% block content %}  
-    <h1>LISTA DE BACKTESTINGS</h1>
-    <div>
-        {% if list_backtesting %}
-            <ul>
-                {% for backtesting in list_backtesting %}
-                    <li><a href="/backtesting/view?id={{backtesting.id}}">Backtesting {{backtesting.id}}</a></li>
-                        <ul>
-                            <li>Activos: {{backtesting.backtesting_assets.ticker_list}}</li>
-                            <li>Capital: {{backtesting.starting_cash}}</li>
-                            <li>Moneda: {{backtesting.currency}}</li>
-                            <li>Estrategia: {{backtesting.strategy.get_name()}}</li>
-                            <li>Marco Temporal: {{backtesting.strategy.time_frame}} días</li>
-                            <li>Salida: {{backtesting.strategy.exit_trade}}</li>
-                            <li>Parámetro de Salida: {{backtesting.strategy.exit_configuration}}</li>
-                        </ul>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No existen backtestings!</p>
-        {% endif %}
-    </div>
-
-{% endblock %}
+                            </ul>
+                            <div class="widget-49-meeting-action">
+                                <a href="/backtesting/view?id={{backtesting.id}}" class="btn btn-sm btn-flash-border-primary">Ver</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No existen backtestings!</p>
+    {% endif %}
+</div>
